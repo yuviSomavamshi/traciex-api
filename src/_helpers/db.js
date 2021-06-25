@@ -32,6 +32,7 @@ async function initialize() {
   db.RefreshToken = require("../models/refresh-token.model")(sequelize);
   db.Location = require("../models/location.model")(sequelize);
   db.Barcode = require("../models/barcode.model")(sequelize);
+  db.Raman = require("../models/raman.model")(sequelize);
 
   // define relationships
   db.Account.hasMany(db.RefreshToken, { onDelete: "CASCADE" });
@@ -45,11 +46,15 @@ async function initialize() {
   db.Location.belongsTo(db.Account);
 
   db.Barcode.belongsTo(db.Account);
+  db.Raman.belongsTo(db.Account);
   db.Account.hasMany(db.Barcode, {
     foreignKey: "staffId",
     sourceKey: "id"
   });
-
+  db.Account.hasMany(db.Raman, {
+    foreignKey: "accountId",
+    sourceKey: "id"
+  });
   db.sequelize = sequelize;
   // sync all models with database
   await sequelize.sync();
