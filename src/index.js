@@ -72,8 +72,6 @@ app.use("/api/v1/barcode", require("./controllers/barcode.controller"));
 
 app.use("/api/v1/bc", require("./controllers/blockchain.controller"));
 
-app.use("/api/v1/appointment", require("./controllers/appointment.controller"));
-
 // global error handler
 app.use(errorHandler);
 
@@ -98,7 +96,11 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     delete clients[socket.username];
     if (senders.hasOwnProperty(socket.username)) {
-      senders[socket.username].emit("DEVICE_DISCONNECTED", { status: "success", message: "Invalid QR code", senderName: socket.username });
+      senders[socket.username].emit("DEVICE_DISCONNECTED", {
+        status: "success",
+        message: "Invalid QR code",
+        senderName: socket.username
+      });
       delete senders[socket.username];
     }
   });
@@ -111,9 +113,16 @@ io.on("connection", (socket) => {
     if (clients.hasOwnProperty(receiverName)) {
       clients[receiverName].emit("SCAN_QR_CODE_CONFIRM", msg);
       senders[receiverName] = socket;
-      socket.emit("SCAN_QR_CODE_RESP", { status: "success", message: "Paired Device", receiverName });
+      socket.emit("SCAN_QR_CODE_RESP", {
+        status: "success",
+        message: "Paired Device",
+        receiverName
+      });
     } else {
-      socket.emit("SCAN_QR_CODE_RESP", { status: "fail", message: "Invalid QR code" });
+      socket.emit("SCAN_QR_CODE_RESP", {
+        status: "fail",
+        message: "Invalid QR code"
+      });
     }
   });
 
@@ -123,9 +132,15 @@ io.on("connection", (socket) => {
     if (!clients.hasOwnProperty(username)) {
       socket.username = username;
       clients[username] = socket;
-      socket.emit("REGISTER_TIMER_RESP", { status: "success", message: "Socket registered" });
+      socket.emit("REGISTER_TIMER_RESP", {
+        status: "success",
+        message: "Socket registered"
+      });
     } else {
-      socket.emit("REGISTER_TIMER_RESP", { status: "fail", message: "Socket already exists" });
+      socket.emit("REGISTER_TIMER_RESP", {
+        status: "fail",
+        message: "Socket already exists"
+      });
     }
   });
 
@@ -134,7 +149,10 @@ io.on("connection", (socket) => {
     if (clients.hasOwnProperty(msg.receiverName)) {
       clients[msg.receiverName].emit("START_WEB_TIMER", msg);
     } else {
-      clients[msg.senderName].emit("START_TIMER_RESP", { status: "fail", message: "Your partner " + msg.receiverName + " was gone" });
+      clients[msg.senderName].emit("START_TIMER_RESP", {
+        status: "fail",
+        message: "Your partner " + msg.receiverName + " was gone"
+      });
     }
   });
 
@@ -143,7 +161,10 @@ io.on("connection", (socket) => {
     if (clients.hasOwnProperty(msg.receiverName)) {
       clients[msg.receiverName].emit("PAUSE_WEB_TIMER", msg);
     } else {
-      clients[msg.senderName].emit("PAUSE_TIMER_RESP", { status: "fail", message: "Your partner " + msg.receiverName + " was gone" });
+      clients[msg.senderName].emit("PAUSE_TIMER_RESP", {
+        status: "fail",
+        message: "Your partner " + msg.receiverName + " was gone"
+      });
     }
   });
 });

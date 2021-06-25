@@ -3,8 +3,6 @@ const request = require("request");
 const Role = require("../_helpers/role");
 const logger = require("../utils/logger");
 
-const appointment = require("./appointment.request");
-
 const BC_URL = process.env.BC_URL || "http://10.2.0.4:8080/api/v1";
 const MONGO_URL = process.env.MONGO_URL || "mongodb://10.2.1.6:27017";
 const AppID = "TracieX";
@@ -59,7 +57,12 @@ function sendRequest(path, payload) {
     request(options, function (err, resp, body) {
       if (err != null) {
         logger.error("Exception", err);
-        return resolve({ statusCode: 500, body: { message: "External Service is down please try after sometime." } });
+        return resolve({
+          statusCode: 500,
+          body: {
+            message: "External Service is down please try after sometime."
+          }
+        });
       }
       resolve({ statusCode: resp.statusCode, body });
     });
@@ -75,14 +78,7 @@ const register = async (req, res) => {
       }
     });
     req.body.customerId = account.customerId;
-    try {
-      await appointment("/schedules/update_status", "POST", null, {
-        id: req.body.patientId,
-        status: "Finished"
-      });
-    } catch (error) {
 
-    }
     const response = await sendRequest(BC_PATHS.REGISTER, req.body);
     res.status(response.statusCode).json(response.body);
 
@@ -119,7 +115,10 @@ const upload = async (req, res) => {
   try {
     if (response && response.statusCode == 201) {
       db.Barcode.update(
-        { diagnosis: req.body.diagnosis, reportTime: req.body.date + " " + req.body.time },
+        {
+          diagnosis: req.body.diagnosis,
+          reportTime: req.body.date + " " + req.body.time
+        },
         {
           where: {
             code: req.body.subject_id
@@ -162,7 +161,9 @@ const resultPatient = async (req, res) => {
   }
 };
 const getCustomerCount = async (req, res) => {
-  const totalCustomers = await db.Account.count({ where: { role: Role.Customer } });
+  const totalCustomers = await db.Account.count({
+    where: { role: Role.Customer }
+  });
   res.send({ totalCustomers });
 };
 
@@ -256,8 +257,22 @@ const getAvgStats = async (req, res) => {
     let stats = await mdb
       .collection(AppID + "_stats")
       .aggregate([
-        { $match: { $expr: { $and: [{ $gte: [{ $toDate: "$_id" }, new Date(start)] }, { $lte: [{ $toDate: "$_id" }, new Date(end)] }] } } },
-        { $group: { _id: { cat: req.query.type == "location" ? "$location" : "$customerId" }, average: { $avg: "$diff" }, count: { $sum: 1 } } }
+        {
+          $match: {
+            $expr: {
+              $and: [{ $gte: [{ $toDate: "$_id" }, new Date(start)] }, { $lte: [{ $toDate: "$_id" }, new Date(end)] }]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              cat: req.query.type == "location" ? "$location" : "$customerId"
+            },
+            average: { $avg: "$diff" },
+            count: { $sum: 1 }
+          }
+        }
       ])
       .toArray();
     stats = stats.sort(function (a, b) {

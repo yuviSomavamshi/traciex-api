@@ -1,5 +1,4 @@
 const db = require("../_helpers/db");
-const sendRequest = require("./appointment.request");
 
 module.exports = {
   getAll,
@@ -39,17 +38,12 @@ async function create(params, userID) {
   }
   //
   // this should be customer id taken from params.
-  const location = new db.Location({ accountId: userID, location: params.location });
+  const location = new db.Location({
+    accountId: userID,
+    location: params.location
+  });
   // save location
   await location.save();
-  let slot = {
-    ...params,
-    customerid: userID,
-    locationid: location.id
-  };
-
-  const response = await sendRequest("/scheduleconfig", "POST", null, slot);
-  location.slot_config = response.body;
 
   return basicDetails(location);
 }
