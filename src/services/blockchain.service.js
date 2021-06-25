@@ -94,6 +94,8 @@ const register = async (req, res) => {
     req.body.customerId = account.customerId;
     const response = await sendRequest(BC_PATHS.REGISTER, req.body);
     if (response.statusCode == 201 || response.statusCode == 200) {
+      barcode.patientId = req.body.patientId;
+      barcode.locationId = req.body.locationId;
       barcode.updatedAt = Date.now();
       barcode.save();
     }
@@ -116,10 +118,7 @@ const upload = async (req, res) => {
   try {
     if (response && response.statusCode == 201) {
       db.Barcode.update(
-        {
-          diagnosis: req.body.diagnosis,
-          reportTime: req.body.date + " " + req.body.time
-        },
+        { diagnosis: req.body.diagnosis, reportTime: req.body.date + " " + req.body.time },
         {
           where: {
             code: req.body.subject_id
