@@ -71,6 +71,20 @@ function sendRequest(path, payload) {
 
 const register = async (req, res) => {
   try {
+    const barcode = await db.Barcode.findOne({
+      where: { code: req.body.barcode }
+    });
+    if (!barcode) {
+      return res.status(404).send({ message: "Invalid Barcode" });
+    }
+
+    if (!barcode && barcode.status == 1) {
+      return res.status(409).send({ message: "Barcode already registered" });
+    }
+
+    barcode.staffId = req.user.id;
+    barcode.status = 1;
+
     req.body.staffId = req.user.id;
     const account = await db.Account.findOne({
       where: {
@@ -78,26 +92,13 @@ const register = async (req, res) => {
       }
     });
     req.body.customerId = account.customerId;
-
     const response = await sendRequest(BC_PATHS.REGISTER, req.body);
-    res.status(response.statusCode).json(response.body);
-
     if (response.statusCode == 201 || response.statusCode == 200) {
-      try {
-        const barcode = new db.Barcode({
-          code: req.body.barcode,
-          batchId: req.body.staffId,
-          status: 1,
-          accountId: req.body.customerId,
-          staffId: req.body.staffId,
-          locationId: req.body.locationId,
-          patientId: req.body.patientId
-        });
-        barcode.save();
-      } catch (e) {
-        logger.error("External", e);
-      }
+      barcode.updatedAt = Date.now();
+      barcode.save();
     }
+
+    res.status(response.statusCode).json(response.body);
   } catch (error) {
     logger.error("Exception while registering patient", error);
     res.status(500).json({ error: "Critical error occured, Please Contact Admin" });
