@@ -195,8 +195,14 @@ const getTestStats = async (req, res) => {
     const mdb = await getConnection();
     const patients = await mdb.collection(AppID + "_Registration").count();
     const totalInvaidResults = await mdb
-      .collection(AppID + "_testResults")
-      .aggregate([{ $match: { "header.createdOn": { $gte: start, $lte: end } } }, { $group: { _id: "$data.diagnosis", count: { $sum: 1 } } }])
+      .collection(AppID + "_stats")
+      .aggregate([{
+        $match: {
+          $expr: {
+            $and: [{ $gte: [{ $toDate: "$_id" }, new Date(start)] }, { $lte: [{ $toDate: "$_id" }, new Date(end)] }]
+          }
+        }
+      }, { $group: { _id: "$diagnosis", count: { $sum: 1 } } }])
       .toArray();
 
     let negative = 0,
