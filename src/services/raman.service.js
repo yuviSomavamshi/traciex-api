@@ -1,7 +1,7 @@
 const db = require("../_helpers/db");
 const readXlsxFile = require("read-excel-file/node");
 const Pagination = require("../utils/pagination");
-
+const whiteboard = require("../utils/whiteboad");
 const Op = require("sequelize").Op;
 
 const upload = async (req, res) => {
@@ -22,6 +22,7 @@ const upload = async (req, res) => {
         res.status(200).send({
           message: "File processed successfully: " + req.file.originalname
         });
+        whiteboard.publish("mount_file", { file: req.file.filename, secret: process.env.SECRET });
       })
       .catch((error) => {
         res.status(500).send({
@@ -29,7 +30,6 @@ const upload = async (req, res) => {
           error: error.message
         });
       });
-
   } catch (e) {
     console.error("Exception while uploading raman", e);
     res.status(500).send({

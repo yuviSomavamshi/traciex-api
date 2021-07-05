@@ -10,6 +10,7 @@ const tls = require("tls");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
 const http = require("http");
+const whiteboard = require("./utils/whiteboad");
 
 require("dotenv").config();
 require("./_helpers/db");
@@ -169,3 +170,10 @@ function shutdown() {
   console.log("Received kill signal. Initiating shutdown...");
   process.exit(1);
 }
+
+whiteboard.init({
+  host: "52.237.82.94",
+  port: 6379,
+  db: 0,
+  password: "HealthX!Chain123BLR"
+});
