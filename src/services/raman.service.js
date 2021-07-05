@@ -10,7 +10,7 @@ const upload = async (req, res) => {
       return res.status(400).send({ message: "Please upload a excel file!" });
     }
 
-    let path = __dirname + "/../_middleware/uploads/" + req.file.filename;
+    let path = __dirname + "/../_middleware/raman/" + req.file.filename;
 
     readXlsxFile(path).then(async (rows) => {
       // skip header

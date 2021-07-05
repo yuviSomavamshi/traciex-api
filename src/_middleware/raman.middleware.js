@@ -1,7 +1,8 @@
 const multer = require("multer");
 
 const excelFilter = (req, file, cb) => {
-  if (file.mimetype.includes("excel") || file.mimetype.includes("spreadsheetml")) {
+  console.log(file.mimetype);
+  if (file.mimetype.includes("csv")) {
     cb(null, true);
   } else {
     cb("Please upload only excel file.", false);
@@ -10,7 +11,7 @@ const excelFilter = (req, file, cb) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, __dirname + "/uploads/");
+    cb(null, __dirname + "/raman/");
   },
   filename: (req, file, cb) => {
     cb(null, `raman-reader-${file.originalname}`);
