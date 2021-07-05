@@ -6,8 +6,9 @@ const Op = require("sequelize").Op;
 
 const upload = async (req, res) => {
   try {
+    console.log('The file uploaded to:' + req.file);
     if (req.file == undefined) {
-      return res.status(400).send({ message: "Please upload a excel file!" });
+      return res.status(400).send({ message: "Please upload a CSV file!" });
     }
 
     let path = __dirname + "/../_middleware/raman/" + req.file.filename;
