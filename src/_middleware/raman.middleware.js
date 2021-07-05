@@ -1,8 +1,10 @@
 const multer = require("multer");
+const path = require("path");
 
 const csvFilter = (req, file, cb) => {
-  console.log(file.mimetype);
-  if (file.mimetype.includes("csv")) {
+  const ext = path.extname(file.originalname);
+  if (ext == ".csv") {
+    file.mimetype = "text/csv";
     cb(null, true);
   } else {
     cb("Please upload only CSV file.", false);

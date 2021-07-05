@@ -6,43 +6,32 @@ const Op = require("sequelize").Op;
 
 const upload = async (req, res) => {
   try {
-    console.log('The file uploaded to:' + req.file);
+    console.log("The file uploaded to:", req.file);
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
-
-    let path = __dirname + "/../_middleware/raman/" + req.file.filename;
-
-    readXlsxFile(path).then(async (rows) => {
-      // skip header
-      rows.shift();
-
-      if (rows.length > 10000) {
-        return res.status(400).send({ message: "Exceeding maximum file upload limit. Max Limit: 10000 ramans per file upload." });
-      }
-
-      const raman = db.Raman({
-        filename: req.file.filename,
-        batchId: req.batchId,
-        status: 0,
-        accountId: req.user.id
-      });
-      raman
-        .save()
-        .then(() => {
-          res.status(200).send({
-            message: "File processed successfully: " + req.file.originalname
-          });
-        })
-        .catch((error) => {
-          res.status(500).send({
-            message: "Fail to import data into database!",
-            error: error.message
-          });
-        });
+    const raman = new db.Raman({
+      filename: req.file.filename,
+      batchId: req.batchId,
+      status: 0,
+      accountId: req.user.id
     });
+    raman
+      .save()
+      .then(() => {
+        res.status(200).send({
+          message: "File processed successfully: " + req.file.originalname
+        });
+      })
+      .catch((error) => {
+        res.status(500).send({
+          message: "Fail to import data into database!",
+          error: error.message
+        });
+      });
+
   } catch (e) {
-    logger.error("Exception while uploading raman", e);
+    console.error("Exception while uploading raman", e);
     res.status(500).send({
       message: "Could not upload the file: " + req.file.originalname
     });
@@ -91,7 +80,7 @@ const findAll = (req, res) => {
 };
 
 const deleteCode = (req, res) => {
-  db.Raman.destroy({ where: { filename: req.params.filename } })
+  db.Raman.destroy({ where: { filename: req.params.file } })
     .then((data) => {
       if (data == 1) {
         res.send({ message: "Raman delete successfully" });
@@ -101,7 +90,7 @@ const deleteCode = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
-        message: err.message || "Some error occurred while deleteing Raman."
+        message: err.message || "Some error occurred while deleting Raman Result file:" + req.params.file
       });
     });
 };
