@@ -25,6 +25,12 @@ const upload = async (req, res) => {
         whiteboard.publish("mount_file", { file: req.file.filename, secret: process.env.SECRET });
       })
       .catch((error) => {
+        if (error.name == "SequelizeUniqueConstraintError") {
+          return res.status(400).send({
+            message: "File name already exists",
+            error: error.message
+          });
+        }
         res.status(500).send({
           message: "Fail to import data into database!",
           error: error.message
@@ -40,11 +46,17 @@ const upload = async (req, res) => {
 
 const uploadByRaman = async (req, res) => {
   try {
+    whiteboard.publish("mount_file", { file: req.file.filename, secret: process.env.SECRET });
+    console.log("The file uploaded to:", req.file);
+    if (req.file == undefined) {
+      return res.status(400).send({ message: "Please upload a CSV file!" });
+    }
+
     const raman = new db.Raman({
       filename: req.file.filename,
       batchId: req.batchId,
       status: 0,
-      accountId: "-1"
+      accountId: req.headers["x-client-id"]
     });
     raman
       .save()
@@ -54,6 +66,12 @@ const uploadByRaman = async (req, res) => {
         });
       })
       .catch((error) => {
+        if (error.name == "SequelizeUniqueConstraintError") {
+          return res.status(400).send({
+            message: "File name already exists",
+            error: error.message
+          });
+        }
         res.status(500).send({
           message: "Fail to import data into database!",
           error: error.message
@@ -68,7 +86,7 @@ const uploadByRaman = async (req, res) => {
 };
 
 const download = (req, res) => {
-  const file = path.join("../_middleware/raman", req.body.filename);
+  const file = path.join(__dirname, "../_middleware/raman", req.body.filename);
   res.download(file);
 };
 

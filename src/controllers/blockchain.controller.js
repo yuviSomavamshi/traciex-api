@@ -59,7 +59,6 @@ function scrapDeviceSchema(req, res, next) {
 
 function uploadSchema(req, res, next) {
   const schema = Joi.object({
-    key: Joi.string().required(),
     subject_id: Joi.string().required(),
     machine_id: Joi.string().required(),
     date: Joi.string(),
@@ -71,7 +70,7 @@ function uploadSchema(req, res, next) {
 }
 
 function apiKey(req, res, next) {
-  if (!APIKEYS.includes(req.body.key)) {
+  if (!APIKEYS.includes(req.headers["x-api-key"])) {
     return res.status(401).send({ message: "Unauthorized" });
   }
   next();
