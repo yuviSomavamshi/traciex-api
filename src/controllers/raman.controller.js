@@ -13,7 +13,8 @@ const setUUID = (req, res, next) => {
 };
 
 router.get("/", authorize([Role.SubAdmin]), ramanService.findAll);
-router.post("/upload", authorize([Role.SubAdmin]), setUUID, upload.single("file"), ramanService.upload);
+router.post("/upload", setUUID, upload.single("file"), ramanService.upload);
+router.post("/download", setUUID, ramanService.download);
 router.delete("/:file", authorize([Role.SubAdmin]), ramanService.deleteCode);
 
 module.exports = router;

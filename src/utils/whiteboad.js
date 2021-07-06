@@ -20,7 +20,7 @@ class Whiteboard extends EventEmitter {
     this.opts = opts;
     let connection = await redis_man.getConnection(WBSUBSCRIBE);
     connection.on("message", (channel, data) => {
-      global.logger.error("WB: Channel:", channel, ", message:", data);
+      console.error("WB: Channel:", channel, ", message:", data);
       if (typeof data == "string") {
         try {
           data = JSON.parse(data);

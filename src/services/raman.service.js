@@ -1,8 +1,8 @@
 const db = require("../_helpers/db");
-const readXlsxFile = require("read-excel-file/node");
 const Pagination = require("../utils/pagination");
 const whiteboard = require("../utils/whiteboad");
 const Op = require("sequelize").Op;
+const path = require("path");
 
 const upload = async (req, res) => {
   try {
@@ -38,23 +38,9 @@ const upload = async (req, res) => {
   }
 };
 
-const STATUS = ["Saved", "Deleted"];
-
 const download = (req, res) => {
-  let ramanReaders = [];
-  db.Raman.findAll().then((objs) => {
-    objs.forEach((obj) => {
-      ramanReaders.push({
-        filename: obj.filename,
-        batchId: obj.batchId,
-        status: STATUS[obj.status] || "-",
-        createdAt: obj.createdAt,
-        updatedAt: obj.updatedAt
-      });
-    });
-
-    res.status(200).send(ramanReaders);
-  });
+  const file = path.join("../_middleware/raman", req.body.filename);
+  res.download(file);
 };
 
 // Retrieve all Raman Readers from the database.
