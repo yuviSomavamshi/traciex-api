@@ -38,6 +38,35 @@ const upload = async (req, res) => {
   }
 };
 
+const uploadByRaman = async (req, res) => {
+  try {
+    const raman = new db.Raman({
+      filename: req.file.filename,
+      batchId: req.batchId,
+      status: 0,
+      accountId: "-1"
+    });
+    raman
+      .save()
+      .then(() => {
+        res.status(200).send({
+          message: "File processed successfully: " + req.file.originalname
+        });
+      })
+      .catch((error) => {
+        res.status(500).send({
+          message: "Fail to import data into database!",
+          error: error.message
+        });
+      });
+  } catch (e) {
+    console.error("Exception while uploading raman", e);
+    res.status(500).send({
+      message: "Could not upload the file: " + req.file.originalname
+    });
+  }
+};
+
 const download = (req, res) => {
   const file = path.join("../_middleware/raman", req.body.filename);
   res.download(file);
@@ -85,5 +114,6 @@ module.exports = {
   upload,
   download,
   findAll,
-  deleteCode
+  deleteCode,
+  uploadByRaman
 };
