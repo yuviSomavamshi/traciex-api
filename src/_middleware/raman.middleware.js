@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     cb(null, __dirname + "/raman/");
   },
   filename: (req, file, cb) => {
-    cb(null, `raman-reader-${file.originalname}`);
+    cb(null, `raman-results-${file.originalname}`);
   }
 });
 
