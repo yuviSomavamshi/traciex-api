@@ -32,6 +32,7 @@ async function initialize() {
   db.RefreshToken = require("../models/refresh-token.model")(sequelize);
   db.Location = require("../models/location.model")(sequelize);
   db.Barcode = require("../models/barcode.model")(sequelize);
+  db.BarcodeMeta = require("../models/barcodeMeta.model")(sequelize);
   db.Raman = require("../models/raman.model")(sequelize);
 
   // define relationships

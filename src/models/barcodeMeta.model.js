@@ -18,7 +18,7 @@ function model(sequelize) {
     totalUploaded: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     totalValid: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     totalDuplicates: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-    totalInvalid: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-    };
+    totalInvalid: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
+  };
   return sequelize.define("barcodeMeta", attributes);
 }

@@ -14,7 +14,7 @@ const upload = async (req, res) => {
       return res.status(400).send({ message: "Please upload a excel file!" });
     }
 
-    let path = __dirname + "/../_middleware/uploads/" + req.file.originalname;
+    let path = __dirname + "/../_middleware/uploads/" + req.file.filename;
 
     readXlsxFile(path).then(async (rows) => {
       // skip header
@@ -88,6 +88,14 @@ const upload = async (req, res) => {
             invalidBarcodes: invalid,
             message: "File processed successfully: " + req.file.originalname
           });
+          db.BarcodeMeta.create({
+            originalFileName: req.file.originalname,
+            batchId: req.batchId,
+            totalUploaded: rows.length,
+            totalValid: data.length,
+            totalDuplicates: duplicates.length,
+            totalInvalid: invalid.length
+          });
         })
         .catch((error) => {
           res.status(500).send({
@@ -95,14 +103,6 @@ const upload = async (req, res) => {
             error: error.message
           });
         });
-      db.BarcodeMeta.create({
-        originalFileName :  req.file.originalname,
-        batchId : req.batchId,
-        totalUploaded : rows.length,
-        totalValid : data.length,
-        totalDuplicates : duplicates.length,
-        totalInvalid  : invalid.length
-      })
     });
   } catch (e) {
     logger.error("Exception while uploading barcodes", e);
@@ -187,7 +187,7 @@ const findAllMeta = (req, res) => {
   }
 
   db.BarcodeMeta.findAndCountAll({
-    where: { originalFileName: { [Op.like]: `%${token}%` }},
+    where: { originalFileName: { [Op.like]: `%${token}%` } },
     limit,
     offset,
     order: orderW
@@ -208,7 +208,7 @@ const createCode = async (req, res) => {
   res.send({ message: "Barcode created successfully" });
 };
 
-const deleteCode = (req, res, next) => {
+const deleteCode = (req, res) => {
   db.Barcode.destroy({ where: { code: req.params.code } })
     .then((data) => {
       if (data == 1) {
@@ -224,22 +224,29 @@ const deleteCode = (req, res, next) => {
     });
 };
 
-// const deleteCodeMeta = (req, res, next) => {
-//   db.Barcode.destroy({ where: { code: req.params.code } })    
-//   db.BarcodeMeta.destroy({ where: { originalFileName: req.params.originalFileName } })
-//   .then((data) => {
-//     if (data == 1) {
-//       res.send({ message: "File delete successfully" });
-//     } else {
-//       res.status(404).send({ message: "File not found" });
-//     }
-//   })
-//   .catch((err) => {
-//     res.status(500).send({
-//       message: err.message || "Some error occurred while deleting File."
-//     });
-//   });
-// };
+const deleteMeta = async (req, res) => {
+  const Meta = await db.BarcodeMeta.findOne({
+    where: {
+      originalFileName: req.params.file
+    }
+  });
+  db.Barcode.destroy({ where: { batchId: Meta.batchId } })
+    .then(async (data) => {
+      console.log(data);
+      if (data == 1) {
+        res.send({ message: "Barcode delete successfully" });
+        await db.BarcodeMeta.destroy({ where: { originalFileName: req.params.file } });
+      } else {
+        res.status(404).send({ message: "Barcode not found" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send({
+        message: err.message || "Some error occurred while deleteing barcode."
+      });
+    });
+};
 
 const verify = async (req, res) => {
   try {
@@ -383,6 +390,7 @@ module.exports = {
   findAll,
   findAllMeta,
   deleteCode,
+  deleteMeta,
   verify,
   createCode,
   report,
