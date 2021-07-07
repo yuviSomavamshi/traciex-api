@@ -15,7 +15,7 @@ const setUUID = (req, res, next) => {
   next();
 };
 
-router.get("/", authorize([Role.Admin, Role.SubAdmin]), barcodeService.findAll);
+router.get("/", authorize([Role.Admin, Role.SubAdmin]), barcodeService.findAllMeta);
 router.post("/verify", authorize([Role.SubAdmin]), verifySchema, barcodeService.verify);
 router.post("/create", setUUID, barcodeService.createCode);
 router.post("/upload", authorize([Role.SubAdmin]), setUUID, upload.single("file"), barcodeService.upload);
