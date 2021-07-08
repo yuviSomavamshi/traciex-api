@@ -46,7 +46,6 @@ const upload = async (req, res) => {
 
 const uploadByRaman = async (req, res) => {
   try {
-    whiteboard.publish("mount_file", { file: req.file.filename, secret: process.env.SECRET });
     console.log("The file uploaded to:", req.file);
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });

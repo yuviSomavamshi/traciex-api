@@ -26,6 +26,7 @@ router.delete("/:file", authorize([Role.SubAdmin]), ramanService.deleteCode);
 module.exports = router;
 
 function apiKey(req, res, next) {
+  console.log(req);
   if (!APIKEYS.includes(req.headers["x-api-key"])) {
     return res.status(401).send({ message: "Unauthorized" });
   }
