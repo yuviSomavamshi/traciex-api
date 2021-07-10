@@ -54,8 +54,9 @@ const uploadByRaman = async (req, res) => {
     const raman = new db.Raman({
       filename: req.file.filename,
       batchId: req.batchId,
-      status: 0,
-      accountId: req.headers["x-client-id"]
+      status: 1,
+      accountId: req.headers["x-client-id"],
+      location: req.headers["x-loc"]
     });
     raman
       .save()
