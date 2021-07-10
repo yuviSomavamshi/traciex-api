@@ -11,6 +11,7 @@ const path = require("path");
 const rateLimit = require("express-rate-limit");
 const http = require("http");
 const whiteboard = require("./utils/whiteboad");
+const RedisMan = require("./utils/redis_man");
 
 require("dotenv").config();
 require("./_helpers/db");
@@ -176,4 +177,13 @@ whiteboard.init({
   port: 6379,
   db: 0,
   password: "HealthX!Chain123BLR"
+});
+
+RedisMan.init({
+  config: {
+    host: "52.237.82.94",
+    port: 6379,
+    db: 0,
+    password: "HealthX!Chain123BLR"
+  }
 });

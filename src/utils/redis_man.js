@@ -22,7 +22,7 @@ module.exports = {
     }
     redisPool[props.key] = {
       config: props.config,
-      oid: props.oid,
+      oid: props.oid || "redis",
       redis: null, // initial value, when no connection is yet attempted.
       status: 0 // status of connection.
     };
