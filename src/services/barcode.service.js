@@ -94,7 +94,7 @@ const upload = async (req, res) => {
             message: "File processed successfully: " + req.file.originalname
           });
 
-          db.BarcodeMeta.findOne({ where: { originalFileName: req.file.originalname } }).then(function (obj) {
+          db.BarcodeMeta.findOne({ where: { originalFileName: req.file.originalname } }).then(async function (obj) {
             if (obj) {
               obj.increment(
                 {
@@ -106,7 +106,7 @@ const upload = async (req, res) => {
                 { where: { originalFileName: req.file.originalname } }
               );
             } else {
-              obj.create({
+              await db.BarcodeMeta.create({
                 originalFileName: req.file.originalname,
                 batchId: req.batchId,
                 totalUploaded: rows.length,
@@ -269,12 +269,8 @@ const deleteMeta = async (req, res) => {
 
   db.Barcode.destroy({ where: { batchId: Meta.batchId } })
     .then(async (data) => {
-      if (data == 1) {
-        res.send({ message: "Barcode delete successfully" });
-        await db.BarcodeMeta.destroy({ where: { originalFileName: req.params.file } });
-      } else {
-        res.status(404).send({ message: "Barcode not found" });
-      }
+      res.send({ message: "Barcode delete successfully" });
+      await db.BarcodeMeta.destroy({ where: { originalFileName: req.params.file } });
     })
     .catch((err) => {
       console.error(err);
