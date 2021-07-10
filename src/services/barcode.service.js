@@ -36,8 +36,13 @@ const upload = async (req, res) => {
           batchId: req.batchId,
           accountId: req.user.id
         };
+
         if (barcode && barcode.code != null && /^[a-zA-Z0-9-]{8,20}$/.test(String(barcode.code))) {
-          barcodes.push(barcode);
+          if (barcodes.indexOf(barcode) !== -1) {
+            duplicates.push(barcode);
+          } else {
+            barcodes.push(barcode);
+          }
         } else {
           invalid.push(barcode.code);
         }
@@ -88,13 +93,28 @@ const upload = async (req, res) => {
             invalidBarcodes: invalid,
             message: "File processed successfully: " + req.file.originalname
           });
-          db.BarcodeMeta.create({
-            originalFileName: req.file.originalname,
-            batchId: req.batchId,
-            totalUploaded: rows.length,
-            totalValid: data.length,
-            totalDuplicates: duplicates.length,
-            totalInvalid: invalid.length
+
+          db.BarcodeMeta.findOne({ where: { originalFileName: req.file.originalname } }).then(function (obj) {
+            if (obj) {
+              obj.increment(
+                {
+                  totalUploaded: +rows.length,
+                  totalValid: +data.length,
+                  totalDuplicates: +duplicates.length,
+                  totalInvalid: +invalid.length
+                },
+                { where: { originalFileName: req.file.originalname } }
+              );
+            } else {
+              obj.create({
+                originalFileName: req.file.originalname,
+                batchId: req.batchId,
+                totalUploaded: rows.length,
+                totalValid: data.length,
+                totalDuplicates: duplicates.length,
+                totalInvalid: invalid.length
+              });
+            }
           });
         })
         .catch((error) => {
@@ -225,14 +245,30 @@ const deleteCode = (req, res) => {
 };
 
 const deleteMeta = async (req, res) => {
+  /**
+   * 1. Check if entry available in Meta, throw error
+   * 2. Check if barcodes utilized, throw error
+   * 3. Else delete codes and entry from Meta
+   */
+
   const Meta = await db.BarcodeMeta.findOne({
     where: {
       originalFileName: req.params.file
     }
   });
+
+  const result = await db.Barcode.findAndCountAll({
+    where: {
+      batchId: Meta.batchId,
+      status: 1
+    }
+  });
+  if (result && result.count > 0) {
+    return res.status(409).send({ message: `Barcode file cannot be deleted, You have utilited: ${result.count} kits` });
+  }
+
   db.Barcode.destroy({ where: { batchId: Meta.batchId } })
     .then(async (data) => {
-      console.log(data);
       if (data == 1) {
         res.send({ message: "Barcode delete successfully" });
         await db.BarcodeMeta.destroy({ where: { originalFileName: req.params.file } });
