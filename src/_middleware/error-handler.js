@@ -2,7 +2,7 @@ const logger = require("../utils/logger");
 
 module.exports = errorHandler;
 
-function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res) {
   logger.error("API Error", err);
   switch (true) {
     case typeof err === "string":

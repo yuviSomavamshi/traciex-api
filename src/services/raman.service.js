@@ -14,7 +14,8 @@ const upload = async (req, res) => {
       filename: req.file.filename,
       batchId: req.batchId,
       status: 0,
-      accountId: req.user.id
+      accountId: req.user.id,
+      location: "Web"
     });
     raman
       .save()
@@ -31,6 +32,7 @@ const upload = async (req, res) => {
             error: error.message
           });
         }
+        console.log(error);
         res.status(500).send({
           message: "Fail to import data into database!",
           error: error.message
@@ -101,7 +103,13 @@ const findAll = (req, res) => {
     orderW = [[sortBy || "createdAt", order || "DESC"]];
   }
 
-  db.Raman.findAndCountAll({ where: { filename: { [Op.like]: `%${token}%` }, status: { [Op.in]: status } }, limit, offset, order: orderW })
+  db.Raman.findAndCountAll({
+    include: db.Account,
+    where: { filename: { [Op.like]: `%${token}%` }, status: { [Op.in]: status } },
+    limit,
+    offset,
+    order: orderW
+  })
     .then((data) => {
       res.send(Pagination.getPagingData(data, page, limit));
     })
