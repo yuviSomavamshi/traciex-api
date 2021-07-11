@@ -34,7 +34,8 @@ const upload = async (req, res) => {
         let barcode = {
           code: row[0],
           batchId: req.batchId,
-          accountId: req.user.id
+          accountId: req.user.id,
+          filename: req.file.originalname
         };
 
         if (barcode && barcode.code != null && /^[a-zA-Z0-9-]{8,20}$/.test(String(barcode.code))) {
@@ -82,10 +83,10 @@ const upload = async (req, res) => {
         await obj.update(
           {
             batchIds: [...obj.batchIds, req.batchId],
-            totalUploaded: +rows.length,
-            totalValid: +valid.length,
-            totalDuplicates: +duplicates.length,
-            totalInvalid: +invalid.length
+            totalUploaded: obj.totalUploaded + rows.length,
+            totalValid: obj.totalValid + valid.length,
+            totalDuplicates: obj.otalDuplicates + duplicates.length,
+            totalInvalid: obj.totalInvalid + invalid.length
           },
           { where: { originalFileName: req.file.originalname } }
         );
@@ -99,16 +100,18 @@ const upload = async (req, res) => {
           totalInvalid: invalid.length
         });
       }
-
-      const data = await db.Barcode.bulkCreate(valid, {
-        returning: ["code"],
-        ignoreDuplicates: true
-      }).catch((error) => {
-        res.status(500).send({
+      try {
+        var data = await db.Barcode.bulkCreate(valid, {
+          returning: ["code"],
+          ignoreDuplicates: true
+        });
+      } catch (e) {
+        console.error(e);
+        return res.status(500).send({
           message: "Fail to import data into database!",
           error: error.message
         });
-      });
+      }
       res.status(200).send({
         totalUploaded: rows.length,
         totalValid: data.length,
