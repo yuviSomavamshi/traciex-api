@@ -85,7 +85,7 @@ const upload = async (req, res) => {
             batchIds: [...obj.batchIds, req.batchId],
             totalUploaded: obj.totalUploaded + rows.length,
             totalValid: obj.totalValid + valid.length,
-            totalDuplicates: obj.otalDuplicates + duplicates.length,
+            totalDuplicates: obj.totalDuplicates + duplicates.length,
             totalInvalid: obj.totalInvalid + invalid.length
           },
           { where: { originalFileName: req.file.originalname } }
