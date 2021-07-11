@@ -114,7 +114,7 @@ const upload = async (req, res) => {
       }
       res.status(200).send({
         totalUploaded: rows.length,
-        totalValid: data.length,
+        totalValid: valid.length,
         totalDuplicates: duplicates.length,
         totalInvalid: invalid.length,
         duplicateBarcodes: duplicates,
