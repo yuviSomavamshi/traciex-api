@@ -124,7 +124,7 @@ const deleteCode = (req, res) => {
   db.Raman.destroy({ where: { filename: req.params.file } })
     .then((data) => {
       if (data == 1) {
-        res.send({ message: "Raman delete successfully" });
+        res.send({ message: "Raman Result file deleted successfully" });
       } else {
         res.status(404).send({ message: "Raman not found" });
       }

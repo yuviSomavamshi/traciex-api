@@ -79,7 +79,7 @@ const upload = async (req, res) => {
       }
       const obj = await db.BarcodeMeta.findOne({ where: { originalFileName: req.file.originalname } });
       if (obj) {
-        await obj.increment(
+        await obj.update(
           {
             batchIds: [...obj.batchIds, req.batchId],
             totalUploaded: +rows.length,
