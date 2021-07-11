@@ -83,7 +83,7 @@ const upload = async (req, res) => {
           {
             batchIds: [...obj.batchIds, req.batchId],
             totalUploaded: +rows.length,
-            totalValid: +data.length,
+            totalValid: +valid.length,
             totalDuplicates: +duplicates.length,
             totalInvalid: +invalid.length
           },
