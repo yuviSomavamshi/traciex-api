@@ -56,6 +56,11 @@ async function initialize() {
     foreignKey: "accountId",
     sourceKey: "id"
   });
+
+  db.BarcodeMeta.hasMany(db.Barcode, {
+    foreignKey: "filename",
+    sourceKey: "originalFileName"
+  });
   db.sequelize = sequelize;
   // sync all models with database
   await sequelize.sync();

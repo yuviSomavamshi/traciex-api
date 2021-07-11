@@ -15,6 +15,10 @@ function model(sequelize) {
       allowNull: false,
       defaultValue: DataTypes.UUIDV4
     },
+    filename: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     status: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     accountId: { type: DataTypes.UUID, allowNull: false },
     staffId: { type: DataTypes.UUID },

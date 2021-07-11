@@ -10,10 +10,10 @@ function model(sequelize) {
       primaryKey: true,
       defaultValue: ""
     },
-    batchId: {
-      type: DataTypes.UUID,
+    batchIds: {
+      type: DataTypes.JSON,
       allowNull: false,
-      defaultValue: DataTypes.UUIDV4
+      defaultValue: []
     },
     totalUploaded: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     totalValid: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },

@@ -38,9 +38,7 @@ const upload = async (req, res) => {
         };
 
         if (barcode && barcode.code != null && /^[a-zA-Z0-9-]{8,20}$/.test(String(barcode.code))) {
-          if (barcodes.indexOf(barcode) !== -1) {
-            duplicates.push(barcode);
-          } else {
+          if (barcodes.indexOf(barcode) === -1) {
             barcodes.push(barcode);
           }
         } else {
@@ -79,50 +77,47 @@ const upload = async (req, res) => {
           message: `No valid barcodes found in ${req.file.originalname} file uploaded. Total Duplicate Barcodes: ${duplicates.length}, Total Invalid Barcodes: ${invalid.length}`
         });
       }
-      db.Barcode.bulkCreate(valid, {
+      const obj = await db.BarcodeMeta.findOne({ where: { originalFileName: req.file.originalname } });
+      if (obj) {
+        await obj.increment(
+          {
+            batchIds: [...obj.batchIds, req.batchId],
+            totalUploaded: +rows.length,
+            totalValid: +data.length,
+            totalDuplicates: +duplicates.length,
+            totalInvalid: +invalid.length
+          },
+          { where: { originalFileName: req.file.originalname } }
+        );
+      } else {
+        await db.BarcodeMeta.create({
+          originalFileName: req.file.originalname,
+          batchIds: [req.batchId],
+          totalUploaded: rows.length,
+          totalValid: data.length,
+          totalDuplicates: duplicates.length,
+          totalInvalid: invalid.length
+        });
+      }
+
+      const data = await db.Barcode.bulkCreate(valid, {
         returning: ["code"],
         ignoreDuplicates: true
-      })
-        .then((data) => {
-          res.status(200).send({
-            totalUploaded: rows.length,
-            totalValid: data.length,
-            totalDuplicates: duplicates.length,
-            totalInvalid: invalid.length,
-            duplicateBarcodes: duplicates,
-            invalidBarcodes: invalid,
-            message: "File processed successfully: " + req.file.originalname
-          });
-
-          db.BarcodeMeta.findOne({ where: { originalFileName: req.file.originalname } }).then(async function (obj) {
-            if (obj) {
-              obj.increment(
-                {
-                  totalUploaded: +rows.length,
-                  totalValid: +data.length,
-                  totalDuplicates: +duplicates.length,
-                  totalInvalid: +invalid.length
-                },
-                { where: { originalFileName: req.file.originalname } }
-              );
-            } else {
-              await db.BarcodeMeta.create({
-                originalFileName: req.file.originalname,
-                batchId: req.batchId,
-                totalUploaded: rows.length,
-                totalValid: data.length,
-                totalDuplicates: duplicates.length,
-                totalInvalid: invalid.length
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          res.status(500).send({
-            message: "Fail to import data into database!",
-            error: error.message
-          });
+      }).catch((error) => {
+        res.status(500).send({
+          message: "Fail to import data into database!",
+          error: error.message
         });
+      });
+      res.status(200).send({
+        totalUploaded: rows.length,
+        totalValid: data.length,
+        totalDuplicates: duplicates.length,
+        totalInvalid: invalid.length,
+        duplicateBarcodes: duplicates,
+        invalidBarcodes: invalid,
+        message: "File processed successfully: " + req.file.originalname
+      });
     });
   } catch (e) {
     logger.error("Exception while uploading barcodes", e);
@@ -245,21 +240,9 @@ const deleteCode = (req, res) => {
 };
 
 const deleteMeta = async (req, res) => {
-  /**
-   * 1. Check if entry available in Meta, throw error
-   * 2. Check if barcodes utilized, throw error
-   * 3. Else delete codes and entry from Meta
-   */
-
-  const Meta = await db.BarcodeMeta.findOne({
-    where: {
-      originalFileName: req.params.file
-    }
-  });
-
   const result = await db.Barcode.findAndCountAll({
     where: {
-      batchId: Meta.batchId,
+      filename: req.params.file,
       status: 1
     }
   });
@@ -267,13 +250,13 @@ const deleteMeta = async (req, res) => {
     return res.status(409).send({ message: `Barcode file cannot be deleted, You have utilited: ${result.count} kits` });
   }
 
-  db.Barcode.destroy({ where: { batchId: Meta.batchId } })
+  db.Barcode.destroy({ where: { filename: req.params.file } })
     .then(async (data) => {
       res.send({ message: "Barcode delete successfully" });
       await db.BarcodeMeta.destroy({ where: { originalFileName: req.params.file } });
     })
     .catch((err) => {
-      console.error(err);
+      logger.error(err);
       res.status(500).send({
         message: err.message || "Some error occurred while deleteing barcode."
       });
@@ -418,13 +401,13 @@ const staffUsageReport = async (req, res) => {
 
 module.exports = {
   upload,
-  download,
-  findAll,
+  //  download,
+  //  findAll,
   findAllMeta,
-  deleteCode,
+  //  deleteCode,
   deleteMeta,
-  verify,
-  createCode,
+  //  verify,
+  //  createCode,
   report,
   customerUsageReport,
   staffUsageReport
