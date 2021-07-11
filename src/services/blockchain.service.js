@@ -4,7 +4,7 @@ const Role = require("../_helpers/role");
 const logger = require("../utils/logger");
 
 const BC_URL = process.env.BC_URL || "http://10.2.0.4:8080/api/v1";
-const MONGO_URL = process.env.MONGO_URL || "mongodb://10.2.1.6:27017";
+const MONGO_URL = process.env.MONGO_URL || "mongodb://10.2.0.4:27017";
 const AppID = "TracieX";
 const BC_HEADERS = {
   "User-Agent": AppID,

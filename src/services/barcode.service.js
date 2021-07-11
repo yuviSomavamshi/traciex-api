@@ -79,7 +79,7 @@ const upload = async (req, res) => {
           message: `No valid barcodes found in ${req.file.originalname} file uploaded. Total Duplicate Barcodes: ${duplicates.length}, Total Invalid Barcodes: ${invalid.length}`
         });
       }
-      db.Barcode.bulkCreate(barcodes, {
+      db.Barcode.bulkCreate(valid, {
         returning: ["code"],
         ignoreDuplicates: true
       })
