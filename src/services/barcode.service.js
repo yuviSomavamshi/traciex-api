@@ -94,7 +94,7 @@ const upload = async (req, res) => {
           originalFileName: req.file.originalname,
           batchIds: [req.batchId],
           totalUploaded: rows.length,
-          totalValid: data.length,
+          totalValid: valid.length,
           totalDuplicates: duplicates.length,
           totalInvalid: invalid.length
         });
