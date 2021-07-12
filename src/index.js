@@ -114,11 +114,13 @@ io.on("connection", (socket) => {
     console.log("event:", message);
   });
   socket.on("SCAN_QR_CODE", (msg) => {
+    console.log(clients);
     console.log("SCAN_QR_CODE:", msg);
     let receiverName = msg.receiverName;
     if (clients.hasOwnProperty(receiverName)) {
       clients[receiverName].emit("SCAN_QR_CODE_CONFIRM", msg);
       senders[receiverName] = socket;
+      console.log({ status: "success", message: "Paired Device", receiverName });
       socket.emit("SCAN_QR_CODE_RESP", { status: "success", message: "Paired Device", receiverName });
     } else {
       socket.emit("SCAN_QR_CODE_RESP", { status: "fail", message: "Invalid QR code" });
