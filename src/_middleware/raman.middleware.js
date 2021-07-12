@@ -13,11 +13,9 @@ const csvFilter = (req, file, cb) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log(file);
     cb(null, __dirname + "/raman/");
   },
   filename: (req, file, cb) => {
-    console.log(file);
     cb(null, `raman-results-${file.originalname}`);
   }
 });

@@ -52,7 +52,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
-const allowlist = ["https://traciex.healthx.global", "http://localhost:3000", "http://127.0.0.1:3000"];
+const allowlist = ["https://traciex.healthx.global", "http://localhost:3000", "http://127.0.0.1:3000", "http://52.237.82.94", "https://52.237.82.94"];
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions = {
     origin: false,
@@ -131,6 +131,7 @@ io.on("connection", (socket) => {
     if (!clients.hasOwnProperty(username)) {
       socket.username = username;
       clients[username] = socket;
+      console.log("REGISTER_TIMER:", { status: "success", message: "Socket registered" });
       socket.emit("REGISTER_TIMER_RESP", { status: "success", message: "Socket registered" });
     } else {
       socket.emit("REGISTER_TIMER_RESP", { status: "fail", message: "Socket already exists" });

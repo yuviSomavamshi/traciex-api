@@ -3,10 +3,11 @@ const Pagination = require("../utils/pagination");
 const whiteboard = require("../utils/whiteboad");
 const Op = require("sequelize").Op;
 const path = require("path");
+const logger = require("../utils/logger");
 
 const upload = async (req, res) => {
   try {
-    console.log("The file uploaded to:", req.file);
+    logger.trace("The file uploaded by web:", req.file);
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
@@ -32,14 +33,14 @@ const upload = async (req, res) => {
             error: error.message
           });
         }
-        console.log(error);
+        logger.error("Exception while saving record to raman table", error);
         res.status(500).send({
           message: "Fail to import data into database!",
           error: error.message
         });
       });
   } catch (e) {
-    console.error("Exception while uploading raman", e);
+    logger.error("Exception while uploading raman", e);
     res.status(500).send({
       message: "Could not upload the file: " + req.file.originalname
     });
@@ -48,7 +49,7 @@ const upload = async (req, res) => {
 
 const uploadByRaman = async (req, res) => {
   try {
-    console.log("The file uploaded to:", req.file);
+    logger.trace("The file uploaded by raman spectrum:", req.file);
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
@@ -80,7 +81,7 @@ const uploadByRaman = async (req, res) => {
         });
       });
   } catch (e) {
-    console.error("Exception while uploading raman", e);
+    logger.error("Exception while uploading raman", e);
     res.status(500).send({
       message: "Could not upload the file: " + req.file.originalname
     });

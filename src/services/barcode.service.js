@@ -4,6 +4,7 @@ const Role = require("../_helpers/role");
 const readXlsxFile = require("read-excel-file/node");
 const excel = require("exceljs");
 const Pagination = require("../utils/pagination");
+const logger = require("../utils/logger");
 const { QueryTypes } = require("sequelize");
 
 const Op = require("sequelize").Op;
@@ -101,12 +102,12 @@ const upload = async (req, res) => {
         });
       }
       try {
-        var data = await db.Barcode.bulkCreate(valid, {
+        await db.Barcode.bulkCreate(valid, {
           returning: ["code"],
           ignoreDuplicates: true
         });
       } catch (e) {
-        console.error(e);
+        logger.error("Fail to import data into database!", e);
         return res.status(500).send({
           message: "Fail to import data into database!",
           error: error.message
