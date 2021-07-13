@@ -9,7 +9,7 @@ const errorHandler = require("./_middleware/error-handler");
 const tls = require("tls");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
-const http = require("http");
+const https = require("https");
 const whiteboard = require("./utils/whiteboad");
 const RedisMan = require("./utils/redis_man");
 
@@ -52,7 +52,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
-const allowlist = ["https://traciex.healthx.global", "http://localhost:3000", "http://127.0.0.1:3000", "http://52.237.82.94", "https://52.237.82.94"];
+const allowlist = ["https://traciex.healthx.global", "http://localhost:3000", "http://127.0.0.1:3000", "http://20.191.153.109"];
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions = {
     origin: false,
@@ -60,7 +60,7 @@ const corsOptionsDelegate = (req, callback) => {
     exposedHeaders: ["set-cookie"]
   };
 
-  let isDomainAllowed = process.env.NODE_ENV === "production" ? allowlist.indexOf(req.header("Origin")) !== -1 : true;
+  let isDomainAllowed = true; //process.env.NODE_ENV === "production" ? allowlist.indexOf(req.header("Origin")) !== -1 : true;
   if (isDomainAllowed) {
     // Enable CORS for this request
     corsOptions.origin = true;
@@ -86,10 +86,15 @@ app.use("/api/v1/bc", require("./controllers/blockchain.controller"));
 app.use(errorHandler);
 
 // start server
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 443;
+const fs = require("fs");
+const privateKey = fs.readFileSync(path.join(__dirname, "privkey.pem"), "utf8");
+const certificate = fs.readFileSync(path.join(__dirname, "fullchain.pem"), "utf8");
+
+var credentials = { key: privateKey, cert: certificate };
 
 tls.CLIENT_RENEG_LIMIT = 0;
-const server = http.createServer(app);
+const server = https.createServer(credentials, app);
 server.listen(port, () => console.log("Server listening on port " + port));
 
 const io = require("socket.io")(server, {
@@ -104,9 +109,10 @@ const senders = {};
 
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {
+    if (socket.username) console.log("DEVICE_DISCONNECTED", socket.username);
     delete clients[socket.username];
     if (senders.hasOwnProperty(socket.username)) {
-      senders[socket.username].emit("DEVICE_DISCONNECTED", { status: "success", message: "Invalid QR code", senderName: socket.username });
+      senders[socket.username].emit("DEVICE_DISCONNECTED", { status: "success", message: "Cleared QR code", senderName: socket.username });
       delete senders[socket.username];
     }
   });
@@ -130,14 +136,10 @@ io.on("connection", (socket) => {
   socket.on("REGISTER_TIMER", (msg) => {
     console.log("REGISTER_TIMER:", msg);
     let username = msg.username;
-    if (!clients.hasOwnProperty(username)) {
-      socket.username = username;
-      clients[username] = socket;
-      console.log("REGISTER_TIMER:", { status: "success", message: "Socket registered" });
-      socket.emit("REGISTER_TIMER_RESP", { status: "success", message: "Socket registered" });
-    } else {
-      socket.emit("REGISTER_TIMER_RESP", { status: "fail", message: "Socket already exists" });
-    }
+    socket.username = username;
+    clients[username] = socket;
+    console.log("REGISTER_TIMER:", { status: "success", message: "Socket registered" });
+    socket.emit("REGISTER_TIMER_RESP", { status: "success", message: "Socket registered" });
   });
 
   socket.on("START_TIMER", function (msg) {
@@ -176,7 +178,7 @@ function shutdown() {
 }
 
 whiteboard.init({
-  host: "52.237.82.94",
+  host: "10.2.0.4",
   port: 6379,
   db: 0,
   password: "HealthX!Chain123BLR"
@@ -184,7 +186,7 @@ whiteboard.init({
 
 RedisMan.init({
   config: {
-    host: "52.237.82.94",
+    host: "10.2.0.4",
     port: 6379,
     db: 0,
     password: "HealthX!Chain123BLR"

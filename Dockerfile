@@ -3,7 +3,7 @@ FROM node:10.24-alpine
 RUN mkdir -p /app/api
 RUN npm i npm@latest -g
 
-EXPOSE 80
+EXPOSE 443
 
 WORKDIR /app/api
 
