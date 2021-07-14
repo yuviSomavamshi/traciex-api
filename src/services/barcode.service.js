@@ -7,15 +7,18 @@ const Pagination = require("../utils/pagination");
 const logger = require("../utils/logger");
 const { QueryTypes } = require("sequelize");
 const Op = require("sequelize").Op;
-const { end } = require("../utils/logger");
 
-const isPropValuesEqual = (subject, target, propNames) => propNames.every((propName) => subject[propName] === target[propName]);
-
-const getUniqueItemsByProperties = (items, propNames) => {
-  const propNamesArray = Array.from(propNames);
-
-  return items.filter((item, index, array) => index === array.findIndex((foundItem) => isPropValuesEqual(foundItem, item, propNamesArray)));
-};
+function getUniqueItemsByProperties(items, prop) {
+  let arr = [];
+  let keys = new Set();
+  items.forEach((element) => {
+    if (!keys.has(element[prop])) {
+      arr.push(element);
+      keys.add(element.code);
+    }
+  });
+  return arr;
+}
 
 const upload = async (req, res) => {
   try {
