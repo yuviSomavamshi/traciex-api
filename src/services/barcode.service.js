@@ -9,15 +9,18 @@ const { QueryTypes } = require("sequelize");
 const Op = require("sequelize").Op;
 
 function getUniqueItemsByProperties(items, prop) {
-  let arr = [];
+  let valid = [],
+    duplicates = [];
   let keys = new Set();
   items.forEach((element) => {
     if (!keys.has(element[prop])) {
-      arr.push(element);
+      valid.push(element);
       keys.add(element.code);
+    } else {
+      duplicates.push(element.code);
     }
   });
-  return arr;
+  return { valid, duplicates };
 }
 
 const upload = async (req, res) => {
@@ -78,7 +81,9 @@ const upload = async (req, res) => {
           valid.push(barcodes[i]);
         }
       }
-      valid = getUniqueItemsByProperties(valid, "code");
+      const result = getUniqueItemsByProperties(valid, "code");
+      valid = result.valid;
+      duplicates = [...duplicates, ...result.duplicates];
       if (valid.length == 0) {
         return res.status(400).send({
           totalUploaded: rows.length,

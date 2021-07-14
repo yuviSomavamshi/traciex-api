@@ -131,7 +131,7 @@ server.listen(port, () => console.log("Server listening on port " + port));
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",
-    credentials: true
+    credentials: false
   }
 });
 
