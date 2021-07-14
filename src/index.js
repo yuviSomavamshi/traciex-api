@@ -21,6 +21,14 @@ const limiter = rateLimit({
   max: 6000 // limit each IP to 6000 requests per windowMs
 });
 
+const redisConfig = {
+  host: process.env.REDIS_HOST || "10.2.0.4",
+  port: process.env.REDIS_PORT || 6379,
+  password: process.env.REDIS_PASSWORD || "HealthX!Chain123BLR"
+};
+whiteboard.init(redisConfig);
+RedisMan.init(redisConfig);
+
 const app = express();
 app.use(limiter);
 app.set("trust proxy", 1);
@@ -83,7 +91,22 @@ app.use("/api/v1/raman", require("./controllers/raman.controller"));
 app.use("/api/v1/bc", require("./controllers/blockchain.controller"));
 
 // global error handler
-app.use(errorHandler);
+//app.use(errorHandler);
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Resource Not Found." });
+});
+app.use((err, req, res) => {
+  res.status(err.statusCode || 500);
+  res.render("error", {
+    message: err.message,
+    error: app.get("env") === "development" ? err : {}
+  });
+});
+
+app.use((err, req, res) => {
+  return res.status(err.status || 500).json("error", { message: "Internal Server Error." });
+});
 
 // start server
 const port = process.env.PORT || 443;
@@ -192,3 +215,4 @@ RedisMan.init({
     password: "HealthX!Chain123BLR"
   }
 });
+
