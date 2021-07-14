@@ -178,7 +178,7 @@ function shutdown() {
 }
 
 whiteboard.init({
-  host: "10.2.0.4",
+  host: "52.239.82.94",
   port: 6379,
   db: 0,
   password: "HealthX!Chain123BLR"
@@ -186,7 +186,7 @@ whiteboard.init({
 
 RedisMan.init({
   config: {
-    host: "10.2.0.4",
+    host: "52.239.82.94",
     port: 6379,
     db: 0,
     password: "HealthX!Chain123BLR"
