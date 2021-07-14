@@ -95,8 +95,6 @@ function register(params) {
   return new Promise(async (resolve) => {
     // validate
     let info = await db.Account.findOne({ where: { email: params.email } });
-    // adding replacements
-    // let info = await db.Account.findOne({where:{email:}})
     if (info) {
       // send already registered error in email to prevent account enumeration
       resolve(false);

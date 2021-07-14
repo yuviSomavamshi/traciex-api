@@ -6,11 +6,8 @@ const excel = require("exceljs");
 const Pagination = require("../utils/pagination");
 const logger = require("../utils/logger");
 const { QueryTypes } = require("sequelize");
-const validate = require("uuid-validate");
 const Op = require("sequelize").Op;
 const { end } = require("../utils/logger");
-
-function checkExists(barcodes) {}
 
 const isPropValuesEqual = (subject, target, propNames) => propNames.every((propName) => subject[propName] === target[propName]);
 
@@ -142,69 +139,6 @@ const upload = async (req, res) => {
   }
 };
 
-const STATUS = ["Unassigned", "Assigned", "Scrapped"];
-const download = (req, res) => {
-  db.Barcode.findAll().then((objs) => {
-    let barcodes = [];
-    objs.forEach((obj) => {
-      barcodes.push({
-        code: obj.code,
-        batchId: obj.batchId,
-        status: STATUS[obj.status] || "-",
-        createdAt: obj.createdAt,
-        updatedAt: obj.updatedAt
-      });
-    });
-
-    let workbook = new excel.Workbook();
-    let worksheet = workbook.addWorksheet("Barcodes");
-
-    worksheet.columns = [
-      { header: "Batch No.", key: "batchId", width: 36 },
-      { header: "Barcode Code", key: "code", width: 30 },
-      { header: "Status", key: "status", width: 10 },
-      { header: "Created Time", key: "createdAt", width: 10 },
-      { header: "Updated Time", key: "updatedAt", width: 10 }
-    ];
-
-    // Add Array Rows
-    worksheet.addRows(barcodes);
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", "attachment; filename=" + "barcodes-" + Date.now() + ".xlsx");
-
-    return workbook.xlsx.write(res).then(function () {
-      res.status(200).end();
-    });
-  });
-};
-
-// Retrieve all Barcodes from the database.
-const findAll = (req, res) => {
-  let { page, size, token, status, order, sortBy } = req.query;
-  if (token == null) token = "";
-  const { limit, offset } = Pagination.getPagination(page, size);
-  status = status != null ? status.split(",") : [0, 1, 2];
-  let orderW = [];
-  if (sortBy != null && order != null) {
-    orderW = [[sortBy || "createdAt", order || "DESC"]];
-  }
-
-  db.Barcode.findAndCountAll({
-    where: { code: { [Op.like]: `%${token}%` }, status: { [Op.in]: status } },
-    limit,
-    offset,
-    order: orderW
-  })
-    .then((data) => {
-      res.send(Pagination.getPagingData(data, page, limit));
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving barcodes."
-      });
-    });
-};
-
 // Retrieve all BarcodeMeta from the database.
 const findAllMeta = (req, res) => {
   let { page, size, token, order, sortBy } = req.query;
@@ -232,28 +166,6 @@ const findAllMeta = (req, res) => {
     });
 };
 
-const createCode = async (req, res) => {
-  const code = new db.Barcode(req.body);
-  await code.save();
-  res.send({ message: "Barcode created successfully" });
-};
-
-const deleteCode = (req, res) => {
-  db.Barcode.destroy({ where: { code: req.params.code } })
-    .then((data) => {
-      if (data == 1) {
-        res.send({ message: "Barcode delete successfully" });
-      } else {
-        res.status(404).send({ message: "Barcode not found" });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while deleteing barcode."
-      });
-    });
-};
-
 const deleteMeta = async (req, res) => {
   const result = await db.Barcode.findAndCountAll({
     where: {
@@ -276,26 +188,6 @@ const deleteMeta = async (req, res) => {
         message: err.message || "Some error occurred while deleteing barcode."
       });
     });
-};
-
-const verify = async (req, res) => {
-  try {
-    const barcode = await db.Barcode.findOne({
-      where: { code: req.body.barcode }
-    });
-    if (!barcode) {
-      return res.status(404).send({ message: "Invalid Barcode" });
-    }
-
-    if (!barcode && barcode.status == 1) {
-      return res.status(404).send({ message: "Barcode already registered" });
-    }
-    return res.send({ message: "Barcode is available" });
-  } catch (e) {
-    res.status(500).send({
-      message: err.message || "Some error occurred while verifyin barcode."
-    });
-  }
 };
 
 const report = async (req, res) => {
@@ -465,13 +357,8 @@ const staffUsageReport = async (req, res) => {
 
 module.exports = {
   upload,
-  //  download,
-  //  findAll,
   findAllMeta,
-  //  deleteCode,
   deleteMeta,
-  //  verify,
-  //  createCode,
   report,
   customerUsageReport,
   staffUsageReport

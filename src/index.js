@@ -207,20 +207,3 @@ function shutdown() {
   console.log("Received kill signal. Initiating shutdown...");
   process.exit(1);
 }
-
-whiteboard.init({
-  host: "52.239.82.94",
-  port: 6379,
-  db: 0,
-  password: "HealthX!Chain123BLR"
-});
-
-RedisMan.init({
-  config: {
-    host: "52.239.82.94",
-    port: 6379,
-    db: 0,
-    password: "HealthX!Chain123BLR"
-  }
-});
-
