@@ -6,8 +6,11 @@ const excel = require("exceljs");
 const Pagination = require("../utils/pagination");
 const logger = require("../utils/logger");
 const { QueryTypes } = require("sequelize");
-
+const validate = require("uuid-validate");
 const Op = require("sequelize").Op;
+const { end } = require("../utils/logger");
+
+function checkExists(barcodes) {}
 
 const isPropValuesEqual = (subject, target, propNames) => propNames.every((propName) => subject[propName] === target[propName]);
 
@@ -300,9 +303,28 @@ const report = async (req, res) => {
     if (req.user.role === Role.Customer) {
       req.query.customerId = req.user.id;
     }
-
-    const QS = `SELECT DATE_FORMAT(barcodes.updatedAt, '%Y-%m-%d') AS 'dt', barcodes.status, count(barcodes.code) as 'hits' FROM accounts, barcodes WHERE barcodes.staffId = accounts.id and barcodes.staffId in (select id from accounts where customerId='${req.query.customerId}' and role='Staff') and barcodes.updatedAt>='${req.query.start} 00:00:00' and barcodes.updatedAt<='${req.query.end} 23:59:59' group by name, dt, status`;
+    // if (!validate(req.query.customerId)) {
+    //   res.status(400).send({
+    //     message: "invalid customerId."
+    //   });
+    // }
+    if (!isNaN(Date.parse(req.query.start))) {
+      res.status(400).send({
+        message: "invalid start date"
+      });
+    }
+    if (!isNaN(Date.parse(req.query.end))) {
+      res.status(400).send({
+        message: "invalid end date"
+      });
+    }
+    const QS = `SELECT DATE_FORMAT(barcodes.updatedAt, '%Y-%m-%d') AS 'dt', barcodes.status, count(barcodes.code) as 'hits' FROM accounts, barcodes WHERE barcodes.staffId = accounts.id and barcodes.staffId in (select id from accounts where customerId=$customer and role='Staff') and barcodes.updatedAt>=$start and barcodes.updatedAt<=$end group by name, dt, status`;
     const records = await db.sequelize.query(QS, {
+      bind: {
+        customer: req.query.customerId,
+        start: req.query.start + " 00:00:00",
+        end: req.query.end + " 23:59:59"
+      },
       type: QueryTypes.SELECT
     });
     let workbook = new excel.Workbook();
@@ -347,10 +369,25 @@ const report = async (req, res) => {
 
 const customerUsageReport = async (req, res) => {
   try {
-    let startDateTime = req.query.startDate + " 00:00:00";
-    let endDateTime = req.query.endDate + " 23:59:59";
-    const QS = `SELECT CASE WHEN status = 1 THEN 'Assigned' WHEN status = 2 THEN 'Scrapped' END AS S, COUNT(*) AS HITS FROM barcodes WHERE updatedAt >='${startDateTime}' AND updatedAt<='${endDateTime}' AND staffId IN (SELECT id FROM accounts WHERE customerId="${req.user.id}") GROUP BY S`;
+    // let startDateTime = req.query.startDate + " 00:00:00";
+    // let endDateTime = req.query.endDate + " 23:59:59";
+    if (!isNaN(Date.parse(start))) {
+      res.status(400).send({
+        message: "invalid start date"
+      });
+    }
+    if (!isNaN(Date.parse(end))) {
+      res.status(400).send({
+        message: "invalid end date"
+      });
+    }
+    const QS = `SELECT CASE WHEN status = 1 THEN 'Assigned' WHEN status = 2 THEN 'Scrapped' END AS S, COUNT(*) AS HITS FROM barcodes WHERE updatedAt >=$start AND updatedAt<=$end AND staffId IN (SELECT id FROM accounts WHERE customerId=$customer) GROUP BY S`;
     const records = await db.sequelize.query(QS, {
+      bind: {
+        customer: req.user.id,
+        start: req.query.startDate + " 00:00:00",
+        end: req.query.endDate + " 23:59:59"
+      },
       type: QueryTypes.SELECT
     });
     let total = 0,
@@ -380,10 +417,25 @@ const customerUsageReport = async (req, res) => {
 
 const staffUsageReport = async (req, res) => {
   try {
-    let startDateTime = req.query.startDate + " 00:00:00";
-    let endDateTime = req.query.endDate + " 23:59:59";
-    const QS = `SELECT CASE WHEN status = 1 THEN 'Assigned' WHEN status = 2 THEN 'Scrapped' END AS S, COUNT(*) AS HITS FROM barcodes WHERE updatedAt >='${startDateTime}' AND updatedAt<='${endDateTime}' AND staffId="${req.user.id}" GROUP BY S`;
+    // let startDateTime = req.query.startDate + " 00:00:00";
+    // let endDateTime = req.query.endDate + " 23:59:59";
+    if (!isNaN(Date.parse(req.query.startDate))) {
+      res.status(400).send({
+        message: "invalid start date"
+      });
+    }
+    if (!isNaN(Date.parse(req.query.endDate))) {
+      res.status(400).send({
+        message: "invalid end date"
+      });
+    }
+    const QS = `SELECT CASE WHEN status = 1 THEN 'Assigned' WHEN status = 2 THEN 'Scrapped' END AS S, COUNT(*) AS HITS FROM barcodes WHERE updatedAt >=$start AND updatedAt<=$end AND staffId=$staff GROUP BY S`;
     const records = await db.sequelize.query(QS, {
+      bind: {
+        staff: req.user.id,
+        start: req.query.startDate + " 00:00:00",
+        end: req.query.endDate + " 23:59:59"
+      },
       type: QueryTypes.SELECT
     });
     let total = 0,
