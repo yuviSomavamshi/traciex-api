@@ -9,6 +9,14 @@ const { QueryTypes } = require("sequelize");
 
 const Op = require("sequelize").Op;
 
+const isPropValuesEqual = (subject, target, propNames) => propNames.every((propName) => subject[propName] === target[propName]);
+
+const getUniqueItemsByProperties = (items, propNames) => {
+  const propNamesArray = Array.from(propNames);
+
+  return items.filter((item, index, array) => index === array.findIndex((foundItem) => isPropValuesEqual(foundItem, item, propNamesArray)));
+};
+
 const upload = async (req, res) => {
   try {
     if (req.file == undefined) {
@@ -67,7 +75,7 @@ const upload = async (req, res) => {
           valid.push(barcodes[i]);
         }
       }
-
+      valid = getUniqueItemsByProperties(valid, "code");
       if (valid.length == 0) {
         return res.status(400).send({
           totalUploaded: rows.length,

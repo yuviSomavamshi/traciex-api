@@ -5,13 +5,16 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const marked = require("marked");
 const cors = require("cors");
+const fs = require("fs");
 const errorHandler = require("./_middleware/error-handler");
 const tls = require("tls");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
+const http = require("http");
 const https = require("https");
 const whiteboard = require("./utils/whiteboad");
 const RedisMan = require("./utils/redis_man");
+const nocache = require("nocache");
 
 require("dotenv").config();
 require("./_helpers/db");
@@ -48,6 +51,7 @@ app.use(
     action: "sameorigin"
   })
 );
+app.use(nocache());
 
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
@@ -60,7 +64,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
-const allowlist = ["https://traciex.healthx.global", "http://localhost:3000", "http://127.0.0.1:3000", "http://20.191.153.109"];
+const allowlist = ["https://traciex.healthx.global", "http://20.191.153.109"];
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions = {
     origin: false,
@@ -68,7 +72,7 @@ const corsOptionsDelegate = (req, callback) => {
     exposedHeaders: ["set-cookie"]
   };
 
-  let isDomainAllowed = true; //process.env.NODE_ENV === "production" ? allowlist.indexOf(req.header("Origin")) !== -1 : true;
+  let isDomainAllowed = process.env.NODE_ENV === "production" ? allowlist.indexOf(req.header("Origin")) !== -1 : true;
   if (isDomainAllowed) {
     // Enable CORS for this request
     corsOptions.origin = true;
@@ -91,7 +95,6 @@ app.use("/api/v1/raman", require("./controllers/raman.controller"));
 app.use("/api/v1/bc", require("./controllers/blockchain.controller"));
 
 // global error handler
-//app.use(errorHandler);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Resource Not Found." });
@@ -109,15 +112,20 @@ app.use((err, req, res) => {
 });
 
 // start server
-const port = process.env.PORT || 443;
-const fs = require("fs");
 const privateKey = fs.readFileSync(path.join(__dirname, "privkey.pem"), "utf8");
 const certificate = fs.readFileSync(path.join(__dirname, "fullchain.pem"), "utf8");
 
 var credentials = { key: privateKey, cert: certificate };
 
 tls.CLIENT_RENEG_LIMIT = 0;
-const server = https.createServer(credentials, app);
+var server;
+if (process.env.NODE_ENV == "production") {
+  server = https.createServer(credentials, app);
+  port = process.env.PORT || 443;
+} else {
+  server = http.createServer(app);
+  port = process.env.PORT || 80;
+}
 server.listen(port, () => console.log("Server listening on port " + port));
 
 const io = require("socket.io")(server, {

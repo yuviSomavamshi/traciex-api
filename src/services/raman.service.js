@@ -7,7 +7,7 @@ const logger = require("../utils/logger");
 
 const upload = async (req, res) => {
   try {
-    logger.trace("The file uploaded by web:", req.file);
+    logger.debug("The file uploaded by web:", req.file);
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
@@ -49,7 +49,7 @@ const upload = async (req, res) => {
 
 const uploadByRaman = async (req, res) => {
   try {
-    logger.trace("The file uploaded by raman spectrum:", req.file);
+    logger.debug("The file uploaded by raman spectrum:", req.file);
     if (req.file == undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
