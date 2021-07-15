@@ -13,7 +13,16 @@ router.post("/register", authorize([Role.Staff]), (req, res) => {
   if (clients.hasOwnProperty(req.body.receiverName)) {
     clients[req.body.receiverName].emit("SCAN_QR_CODE_CONFIRM", req.body);
     senders[req.user.id] = req.body;
+    clients[req.body.receiverName].userId = req.user.id;
     res.status(201).send({ statusCode: 201, status: "success", message: "Paired Device " + req.body.receiverName });
+  } else {
+    res.status(404).send({ statusCode: 404, status: "fail", message: "Your partner " + req.body.receiverName + " was gone" });
+  }
+});
+
+router.post("/check", authorize([Role.Staff]), (req, res) => {
+  if (senders[req.user.id] && clients.hasOwnProperty(senders[req.user.id].receiverName)) {
+    res.status(200).send({ statusCode: 200, status: "success", message: "Paired Device " + req.body.receiverName });
   } else {
     res.status(404).send({ statusCode: 404, status: "fail", message: "Your partner " + req.body.receiverName + " was gone" });
   }
@@ -50,8 +59,15 @@ router.post("/timer/:type", authorize([Role.Staff]), (req, res) => {
   }
 });
 router.post("/disconnect", authorize([Role.Staff]), (req, res) => {
-  delete senders[req.user.id];
-  res.status(201).send({ statusCode: 201, message: "Disconnected" });
+  if (senders.hasOwnProperty(req.user.id)) {
+    let receiverName = senders[req.user.id].receiverName;
+    if (clients.hasOwnProperty(receiverName)) {
+      clients[receiverName].emit("DISCONNECT_TIMER", {});
+    }
+    delete senders[req.user.id];
+  }
+
+  res.status(200).send({ statusCode: 201, message: "Disconnected" });
 });
 
 module.exports = {
@@ -67,6 +83,7 @@ module.exports = {
       socket.on("disconnect", () => {
         if (socket.username) console.log("DEVICE_DISCONNECTED", socket.username);
         delete clients[socket.username];
+        delete senders[socket.userId];
       });
 
       socket.on("REGISTER_TIMER", (msg) => {
@@ -76,15 +93,6 @@ module.exports = {
         clients[username] = socket;
         console.log("REGISTER_TIMER:", { status: "success", message: "Socket registered" });
         socket.emit("REGISTER_TIMER_RESP", { status: "success", message: "Socket registered" });
-      });
-
-      socket.on("START_TIMER", function (msg) {
-        console.log("START_TIMER:", msg);
-        if (clients.hasOwnProperty(msg.receiverName)) {
-          clients[msg.receiverName].emit("START_WEB_TIMER", msg);
-        } else {
-          clients[msg.senderName].emit("START_TIMER_RESP", { status: "fail", message: "Your partner " + msg.receiverName + " was gone" });
-        }
       });
     });
   }

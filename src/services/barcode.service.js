@@ -203,18 +203,14 @@ const report = async (req, res) => {
     if (req.user.role === Role.Customer) {
       req.query.customerId = req.user.id;
     }
-    // if (!validate(req.query.customerId)) {
-    //   res.status(400).send({
-    //     message: "invalid customerId."
-    //   });
-    // }
-    if (!isNaN(Date.parse(req.query.start))) {
-      res.status(400).send({
+
+    if (isNaN(Date.parse(req.query.start))) {
+      return res.status(400).send({
         message: "invalid start date"
       });
     }
-    if (!isNaN(Date.parse(req.query.end))) {
-      res.status(400).send({
+    if (isNaN(Date.parse(req.query.end))) {
+      return res.status(400).send({
         message: "invalid end date"
       });
     }
@@ -269,15 +265,13 @@ const report = async (req, res) => {
 
 const customerUsageReport = async (req, res) => {
   try {
-    // let startDateTime = req.query.startDate + " 00:00:00";
-    // let endDateTime = req.query.endDate + " 23:59:59";
-    if (!isNaN(Date.parse(start))) {
-      res.status(400).send({
+    if (isNaN(Date.parse(req.query.startDate))) {
+      return res.status(400).send({
         message: "invalid start date"
       });
     }
-    if (!isNaN(Date.parse(end))) {
-      res.status(400).send({
+    if (isNaN(Date.parse(req.query.endDate))) {
+      return res.status(400).send({
         message: "invalid end date"
       });
     }
@@ -317,15 +311,13 @@ const customerUsageReport = async (req, res) => {
 
 const staffUsageReport = async (req, res) => {
   try {
-    // let startDateTime = req.query.startDate + " 00:00:00";
-    // let endDateTime = req.query.endDate + " 23:59:59";
-    if (!isNaN(Date.parse(req.query.startDate))) {
-      res.status(400).send({
+    if (isNaN(Date.parse(req.query.startDate))) {
+      return res.status(400).send({
         message: "invalid start date"
       });
     }
-    if (!isNaN(Date.parse(req.query.endDate))) {
-      res.status(400).send({
+    if (isNaN(Date.parse(req.query.endDate))) {
+      return res.status(400).send({
         message: "invalid end date"
       });
     }
