@@ -15,8 +15,9 @@ const https = require("https");
 const whiteboard = require("./utils/whiteboad");
 const RedisMan = require("./utils/redis_man");
 const nocache = require("nocache");
-
 require("dotenv").config();
+const WebSocket = require("./controllers/websocket.controller");
+
 require("./_helpers/db");
 
 const limiter = rateLimit({
@@ -94,6 +95,8 @@ app.use("/api/v1/raman", require("./controllers/raman.controller"));
 
 app.use("/api/v1/bc", require("./controllers/blockchain.controller"));
 
+app.use("/api/v1/ws", WebSocket.router);
+
 // global error handler
 
 app.use((req, res) => {
@@ -127,70 +130,7 @@ if (process.env.NODE_ENV == "production") {
   port = process.env.PORT || 80;
 }
 server.listen(port, () => console.log("Server listening on port " + port));
-
-const io = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-    credentials: false
-  }
-});
-
-const clients = {};
-const senders = {};
-
-io.on("connection", (socket) => {
-  socket.on("disconnect", () => {
-    if (socket.username) console.log("DEVICE_DISCONNECTED", socket.username);
-    delete clients[socket.username];
-    if (senders.hasOwnProperty(socket.username)) {
-      senders[socket.username].emit("DEVICE_DISCONNECTED", { status: "success", message: "Cleared QR code", senderName: socket.username });
-      delete senders[socket.username];
-    }
-  });
-  socket.on("event", (message) => {
-    console.log("event:", message);
-  });
-  socket.on("SCAN_QR_CODE", (msg) => {
-    console.log(clients);
-    console.log("SCAN_QR_CODE:", msg);
-    let receiverName = msg.receiverName;
-    if (clients.hasOwnProperty(receiverName)) {
-      clients[receiverName].emit("SCAN_QR_CODE_CONFIRM", msg);
-      senders[receiverName] = socket;
-      console.log({ status: "success", message: "Paired Device", receiverName });
-      socket.emit("SCAN_QR_CODE_RESP", { status: "success", message: "Paired Device", receiverName });
-    } else {
-      socket.emit("SCAN_QR_CODE_RESP", { status: "fail", message: "Invalid QR code" });
-    }
-  });
-
-  socket.on("REGISTER_TIMER", (msg) => {
-    console.log("REGISTER_TIMER:", msg);
-    let username = msg.username;
-    socket.username = username;
-    clients[username] = socket;
-    console.log("REGISTER_TIMER:", { status: "success", message: "Socket registered" });
-    socket.emit("REGISTER_TIMER_RESP", { status: "success", message: "Socket registered" });
-  });
-
-  socket.on("START_TIMER", function (msg) {
-    console.log("START_TIMER:", msg);
-    if (clients.hasOwnProperty(msg.receiverName)) {
-      clients[msg.receiverName].emit("START_WEB_TIMER", msg);
-    } else {
-      clients[msg.senderName].emit("START_TIMER_RESP", { status: "fail", message: "Your partner " + msg.receiverName + " was gone" });
-    }
-  });
-
-  socket.on("PAUSE_TIMER", function (msg) {
-    console.log("PAUSE_TIMER:", msg);
-    if (clients.hasOwnProperty(msg.receiverName)) {
-      clients[msg.receiverName].emit("PAUSE_WEB_TIMER", msg);
-    } else {
-      clients[msg.senderName].emit("PAUSE_TIMER_RESP", { status: "fail", message: "Your partner " + msg.receiverName + " was gone" });
-    }
-  });
-});
+WebSocket.init(server);
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);

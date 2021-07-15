@@ -16,21 +16,11 @@ const setUUID = (req, res, next) => {
 };
 
 router.get("/", authorize([Role.Admin, Role.SubAdmin]), barcodeService.findAllMeta);
-//router.post("/verify", authorize([Role.SubAdmin]), verifySchema, barcodeService.verify);
-//router.post("/create", setUUID, barcodeService.createCode);
 router.post("/upload", authorize([Role.SubAdmin]), setUUID, upload.single("file"), barcodeService.upload);
-//router.get("/export", authorize([Role.Admin, Role.SubAdmin]), barcodeService.download);
 router.get("/report", authorize([Role.Admin, Role.Customer]), qsSchema, barcodeService.report);
 router.delete("/:file", authorize([Role.SubAdmin]), barcodeService.deleteMeta);
 
 module.exports = router;
-
-function verifySchema(req, res, next) {
-  const schema = Joi.object({
-    barcode: Joi.string().required()
-  });
-  validateRequest(req, next, schema);
-}
 
 function qsSchema(req, res, next) {
   const schema = Joi.object({
