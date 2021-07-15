@@ -6,7 +6,6 @@ const cookieParser = require("cookie-parser");
 const marked = require("marked");
 const cors = require("cors");
 const fs = require("fs");
-const errorHandler = require("./_middleware/error-handler");
 const tls = require("tls");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
@@ -31,7 +30,9 @@ const redisConfig = {
   password: process.env.REDIS_PASSWORD || "HealthX!Chain123BLR"
 };
 whiteboard.init(redisConfig);
-RedisMan.init(redisConfig);
+RedisMan.init({
+  config: redisConfig
+});
 
 const app = express();
 app.use(limiter);
