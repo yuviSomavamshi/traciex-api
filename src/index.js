@@ -116,15 +116,12 @@ app.use((err, req, res) => {
 });
 
 // start server
-const privateKey = fs.readFileSync(path.join(__dirname, "privkey.pem"), "utf8");
-const certificate = fs.readFileSync(path.join(__dirname, "fullchain.pem"), "utf8");
-
-var credentials = { key: privateKey, cert: certificate };
-
 tls.CLIENT_RENEG_LIMIT = 0;
 var server;
 if (process.env.NODE_ENV == "production") {
-  server = https.createServer(credentials, app);
+  const privateKey = fs.readFileSync(path.join(__dirname, "privkey.pem"), "utf8");
+  const certificate = fs.readFileSync(path.join(__dirname, "fullchain.pem"), "utf8");
+  server = https.createServer({ key: privateKey, cert: certificate }, app);
   port = process.env.PORT || 443;
 } else {
   server = http.createServer(app);
