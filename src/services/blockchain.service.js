@@ -22,7 +22,7 @@ const { Op } = require("sequelize");
 const http = require("http");
 const keepAliveAgent = new http.Agent({
   maxSockets: 40,
-  keepAlive: true,
+  keepAlive: process.env.NODE_ENV === "production",
   maxFreeSockets: 20
 });
 
@@ -52,7 +52,7 @@ function sendRequest(path, payload) {
         ...BC_HEADERS
       },
       agent: keepAliveAgent,
-      time: true
+      time: process.env.NODE_ENV !== "production"
     };
     request(options, function (err, resp, body) {
       if (err != null) {

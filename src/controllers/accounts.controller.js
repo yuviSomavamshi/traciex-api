@@ -365,8 +365,8 @@ function update(req, res) {
 function setTokenCookie(res, token) {
   // create cookie with refresh token that expires in 7 days
   const cookieOptions = {
-    httpOnly: true,
-    secure: true,
+    httpOnly: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production",
     expires: new Date(Date.now() + REFRESH_TOKEN_EXPIRY)
   };
   res.cookie("refreshToken", token, cookieOptions);

@@ -10,9 +10,7 @@ const fs = require("fs");
 const tls = require("tls");
 const path = require("path");
 const compression = require("compression");
-const connectRedis = require("connect-redis");
 const rateLimit = require("express-rate-limit");
-const session = require("express-session");
 const http = require("http");
 const https = require("https");
 const whiteboard = require("./utils/whiteboad");
@@ -35,25 +33,31 @@ whiteboard.init(redisConfig);
 RedisMan.init({
   config: redisConfig
 });
-const ioredis = require("ioredis");
-const redisClient = new ioredis(redisConfig);
 
 const app = express();
-/*
-const RedisStore = new (connectRedis(session))();
-app.use(session({
-  store: RedisStore({ client: redisClient }),
-  name: "traciex",
-  secret: process.env.SECRET,
-  cookie: {
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7days
-  },
-  resave: true,
-  saveUninitialized: true,
-  rolling: true
-}));
-*/
+
+const connectRedis = require("connect-redis");
+const session = require("express-session");
+
+//const IORedis = require("ioredis");
+//const redisClient = new IORedis(redisConfig);
+
+//const RedisStore = new (connectRedis(session))();
+app.use(
+  session({
+    //  store: RedisStore({ client: redisClient }),
+    name: "traciex",
+    secret: process.env.SECRET,
+    cookie: {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7days
+    },
+    resave: true,
+    saveUninitialized: true,
+    rolling: true
+  })
+);
+
 app.use(limiter);
 app.set("trust proxy", 1);
 app.set("etag", false); // turning off etag
@@ -82,11 +86,11 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
-const allowlist = ["https://traciex.healthx.global", "http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.0.101:3000"];
+const allowlist = ["https://traciex.healthx.global"];
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions = {
     origin: false,
-    credentials: true,
+    credentials: process.env.NODE_ENV === "production",
     exposedHeaders: ["set-cookie"]
   };
 
@@ -127,16 +131,9 @@ app.use("/api/v1/ws", WebSocket.router);
 app.use((req, res) => {
   res.status(404).json({ message: "Resource Not Found." });
 });
-app.use((err, req, res) => {
-  res.status(err.statusCode || 500);
-  res.render("error", {
-    message: err.message,
-    error: app.get("env") === "development" ? err : {}
-  });
-});
 
 app.use((err, req, res) => {
-  return res.status(err.status || 500).json("error", { message: "Internal Server Error." });
+  return res.status(err.status || 500).json({ message: "Internal Server Error." });
 });
 
 // start server
