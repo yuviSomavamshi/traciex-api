@@ -26,7 +26,7 @@ function getUniqueItemsByProperties(items, prop) {
 const upload = async (req, res) => {
   try {
     if (req.file == undefined) {
-      return res.status(400).send({ message: "Please upload a excel file!" });
+      return res.status(400).send({ message: "Please upload an Excel file!" });
     }
 
     let path = __dirname + "/../_middleware/uploads/" + req.file.filename;
@@ -203,17 +203,24 @@ const report = async (req, res) => {
     if (req.user.role === Role.Customer) {
       req.query.customerId = req.user.id;
     }
-
+    
     if (isNaN(Date.parse(req.query.start))) {
       return res.status(400).send({
-        message: "invalid start date"
+        message: "Invalid start date"
       });
     }
     if (isNaN(Date.parse(req.query.end))) {
       return res.status(400).send({
-        message: "invalid end date"
+        message: "Invalid end date"
       });
     }
+
+    if(Date.parse(req.query.start) > Date.parse(req.query.end)) {
+      return res.status(400).send({
+        message: "Start date cannot be greater than end date"
+      });
+    }
+
     const QS = `SELECT DATE_FORMAT(barcodes.updatedAt, '%Y-%m-%d') AS 'dt', barcodes.status, count(barcodes.code) as 'hits' FROM accounts, barcodes WHERE barcodes.staffId = accounts.id and barcodes.staffId in (select id from accounts where customerId=$customer and role='Staff') and barcodes.updatedAt>=$start and barcodes.updatedAt<=$end group by name, dt, status`;
     const records = await db.sequelize.query(QS, {
       bind: {
@@ -258,7 +265,7 @@ const report = async (req, res) => {
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while verifyin barcode."
+      message: err.message || "Some error occurred while verifying barcode."
     });
   }
 };
@@ -267,14 +274,21 @@ const customerUsageReport = async (req, res) => {
   try {
     if (isNaN(Date.parse(req.query.startDate))) {
       return res.status(400).send({
-        message: "invalid start date"
+        message: "Invalid start date"
       });
     }
     if (isNaN(Date.parse(req.query.endDate))) {
       return res.status(400).send({
-        message: "invalid end date"
+        message: "Invalid end date"
       });
     }
+
+    if(Date.parse(req.query.start) > Date.parse(req.query.end)) {
+      return res.status(400).send({
+        message: "Start date cannot be greater than end date"
+      });
+    }
+
     const QS = `SELECT CASE WHEN status = 1 THEN 'Assigned' WHEN status = 2 THEN 'Scrapped' END AS S, COUNT(*) AS HITS FROM barcodes WHERE updatedAt >=$start AND updatedAt<=$end AND staffId IN (SELECT id FROM accounts WHERE customerId=$customer) GROUP BY S`;
     const records = await db.sequelize.query(QS, {
       bind: {
@@ -304,7 +318,7 @@ const customerUsageReport = async (req, res) => {
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while verifyin barcode."
+      message: err.message || "Some error occurred while verifying barcode."
     });
   }
 };
@@ -313,14 +327,21 @@ const staffUsageReport = async (req, res) => {
   try {
     if (isNaN(Date.parse(req.query.startDate))) {
       return res.status(400).send({
-        message: "invalid start date"
+        message: "Invalid start date"
       });
     }
     if (isNaN(Date.parse(req.query.endDate))) {
       return res.status(400).send({
-        message: "invalid end date"
+        message: "Invalid end date"
       });
     }
+
+    if(Date.parse(req.query.start) > Date.parse(req.query.end)) {
+      return res.status(400).send({
+        message: "Start date cannot be greater than end date"
+      });
+    }
+
     const QS = `SELECT CASE WHEN status = 1 THEN 'Assigned' WHEN status = 2 THEN 'Scrapped' END AS S, COUNT(*) AS HITS FROM barcodes WHERE updatedAt >=$start AND updatedAt<=$end AND staffId=$staff GROUP BY S`;
     const records = await db.sequelize.query(QS, {
       bind: {
