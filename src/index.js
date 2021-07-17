@@ -132,8 +132,8 @@ app.use((req, res) => {
   res.status(404).json({ message: "Resource Not Found." });
 });
 
-app.use((err, req, res) => {
-  return res.status(err.status || 500).json({ message: "Internal Server Error." });
+app.use((err, req, res, next) => {
+  return res.status(err.status || 500).json({ message: err.message || "Internal Server Error." });
 });
 
 // start server
