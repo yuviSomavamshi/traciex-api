@@ -203,7 +203,7 @@ const report = async (req, res) => {
     if (req.user.role === Role.Customer) {
       req.query.customerId = req.user.id;
     }
-    
+
     if (isNaN(Date.parse(req.query.start))) {
       return res.status(400).send({
         message: "Invalid start date"
@@ -215,7 +215,7 @@ const report = async (req, res) => {
       });
     }
 
-    if(Date.parse(req.query.start) > Date.parse(req.query.end)) {
+    if (Date.parse(req.query.start) > Date.parse(req.query.end)) {
       return res.status(400).send({
         message: "Start date cannot be greater than end date"
       });
@@ -283,7 +283,7 @@ const customerUsageReport = async (req, res) => {
       });
     }
 
-    if(Date.parse(req.query.start) > Date.parse(req.query.end)) {
+    if (Date.parse(req.query.start) > Date.parse(req.query.end)) {
       return res.status(400).send({
         message: "Start date cannot be greater than end date"
       });
@@ -336,7 +336,7 @@ const staffUsageReport = async (req, res) => {
       });
     }
 
-    if(Date.parse(req.query.start) > Date.parse(req.query.end)) {
+    if (Date.parse(req.query.start) > Date.parse(req.query.end)) {
       return res.status(400).send({
         message: "Start date cannot be greater than end date"
       });

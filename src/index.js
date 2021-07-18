@@ -134,7 +134,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   //error response for validation error
-  if(typeof err === 'string' && err.startsWith('Invalid input')) {
+  if (typeof err === "string" && err.startsWith("Invalid input")) {
     return res.status(400).send({ message: err });
   }
 
