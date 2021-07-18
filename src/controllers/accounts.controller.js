@@ -76,7 +76,7 @@ function authenticate(req, res) {
 
 function refreshTokenMW(req, res) {
   const token = req.cookies.refreshToken;
-  if (token == null) {
+  if (token === null) {
     return res.status(401).json({ message: "Token Not Valid" });
   }
   const ipAddress = req.ip;
@@ -187,7 +187,7 @@ function changePasswordSchema(req, res, next) {
 }
 
 function changePassword(req, res) {
-  if (req.body.oldPassword == req.body.password) {
+  if (req.body.oldPassword === req.body.password) {
     return res.status(400).json({
       message: "New password cannot be same as old password"
     });

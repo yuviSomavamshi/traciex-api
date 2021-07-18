@@ -8,7 +8,7 @@ const logger = require("../utils/logger");
 const upload = async (req, res) => {
   try {
     logger.debug("The file uploaded by web:", req.file);
-    if (req.file == undefined) {
+    if (req.file === undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
     const raman = new db.Raman({
@@ -27,7 +27,7 @@ const upload = async (req, res) => {
         whiteboard.publish("mount_file", { file: req.file.filename, secret: process.env.SECRET });
       })
       .catch((error) => {
-        if (error.name == "SequelizeUniqueConstraintError") {
+        if (error.name === "SequelizeUniqueConstraintError") {
           return res.status(400).send({
             message: "File name already exists",
             error: error.message
@@ -50,7 +50,7 @@ const upload = async (req, res) => {
 const uploadByRaman = async (req, res) => {
   try {
     logger.debug("The file uploaded by raman spectrum:", req.file);
-    if (req.file == undefined) {
+    if (req.file === undefined) {
       return res.status(400).send({ message: "Please upload a CSV file!" });
     }
 
@@ -69,7 +69,7 @@ const uploadByRaman = async (req, res) => {
         });
       })
       .catch((error) => {
-        if (error.name == "SequelizeUniqueConstraintError") {
+        if (error.name === "SequelizeUniqueConstraintError") {
           return res.status(400).send({
             message: "File name already exists",
             error: error.message
@@ -96,11 +96,11 @@ const download = (req, res) => {
 // Retrieve all Raman Readers from the database.
 const findAll = (req, res) => {
   let { page, size, token, status, order, sortBy } = req.query;
-  if (token == null) token = "";
+  if (token === null) token = "";
   const { limit, offset } = Pagination.getPagination(page, size);
-  status = status != null ? status.split(",") : [0, 1, 2];
+  status = status !== null ? status.split(",") : [0, 1, 2];
   let orderW = [];
-  if (sortBy != null && order != null) {
+  if (sortBy !== null && order !== null) {
     orderW = [[sortBy || "createdAt", order || "DESC"]];
   }
 
@@ -124,7 +124,7 @@ const findAll = (req, res) => {
 const deleteCode = (req, res) => {
   db.Raman.destroy({ where: { filename: req.params.file } })
     .then((data) => {
-      if (data == 1) {
+      if (data === 1) {
         res.send({ message: "Raman Result file deleted successfully" });
       } else {
         res.status(404).send({ message: "Raman not found" });

@@ -3,7 +3,7 @@ const path = require("path");
 
 const csvFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname);
-  if (ext == ".csv") {
+  if (ext === ".csv") {
     file.mimetype = "text/csv";
     cb(null, true);
   } else {

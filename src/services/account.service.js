@@ -44,7 +44,7 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
 
   if (!account || !(await bcrypt.compare(password, account.passwordHash))) {
     let msg = "Email or password is incorrect";
-    if (userAgent == "HealthX-Mobile") {
+    if (userAgent === "HealthX-Mobile") {
       msg += "\nIn case you do not have Account please Signup";
     }
     throw new Error(msg);
@@ -247,7 +247,7 @@ async function getAll(custID = null) {
 async function getAllByRole(req, res) {
   let { page, size, token } = req.query;
   let { role } = req.params;
-  if (token == null) token = "";
+  if (token === null) token = "";
   let { limit, offset } = Pagination.getPagination(page, size);
   let accounts, data;
   if (["Customer"].includes(role)) {
@@ -266,7 +266,7 @@ async function getAllByRole(req, res) {
       limit,
       offset
     });
-  } else if (role == "all") {
+  } else if (role === "all") {
     data = await db.Account.findAndCountAll();
   } else {
     data = {
@@ -303,11 +303,11 @@ async function create(params, userID = null) {
     throw new Error('Email "' + params.email + '" is already registered');
   }
 
-  if (params.role == "Admin") {
+  if (params.role === "Admin") {
     Object.assign(params, { addedbyId: userID });
   }
 
-  if (params.role == "Staff") {
+  if (params.role === "Staff") {
     Object.assign(params, { customerId: userID });
   }
 
@@ -464,12 +464,12 @@ async function sendOnboardEmail(account, password) {
 async function sendVerificationEmail(account) {
   try {
     const verifyUrl =
-      account.role == Role.Admin ? `${API_URL}/accounts/verify-email?token=${account.verificationToken}` : `${account.verificationToken}`;
+      account.role === Role.Admin ? `${API_URL}/accounts/verify-email?token=${account.verificationToken}` : `${account.verificationToken}`;
     const activationLinkValidity = 3;
 
     return await sendEmail(
       account.email,
-      account.role == Role.Admin ? "welcome.html" : "verification-code.html",
+      account.role === Role.Admin ? "welcome.html" : "verification-code.html",
       {
         activationLink: verifyUrl,
         name: account.name,

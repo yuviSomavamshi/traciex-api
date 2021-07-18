@@ -28,7 +28,7 @@ const keepAliveAgent = new http.Agent({
 
 var client;
 async function getConnection() {
-  if (client == null) {
+  if (client === null) {
     client = new MongoClient(MONGO_URL, {
       useUnifiedTopology: true
     });
@@ -55,7 +55,7 @@ function sendRequest(path, payload) {
       time: process.env.NODE_ENV !== "production"
     };
     request(options, function (err, resp, body) {
-      if (err != null) {
+      if (err !== null) {
         logger.error("Exception", err);
         return resolve({
           statusCode: 500,
@@ -78,7 +78,7 @@ const register = async (req, res) => {
       return res.status(404).send({ message: "Invalid Barcode" });
     }
 
-    if (!barcode && barcode.status == 1) {
+    if (!barcode && barcode.status === 1) {
       return res.status(409).send({ message: "Barcode already registered" });
     }
 
@@ -93,7 +93,7 @@ const register = async (req, res) => {
     });
     req.body.customerId = account.customerId;
     const response = await sendRequest(BC_PATHS.REGISTER, req.body);
-    if (response.statusCode == 201 || response.statusCode == 200) {
+    if (response.statusCode === 201 || response.statusCode === 200) {
       barcode.patientId = req.body.patientId;
       barcode.locationId = req.body.locationId;
       barcode.updatedAt = Date.now();
@@ -116,7 +116,7 @@ const upload = async (req, res) => {
     res.status(500).json({ error: "Critical error occured, Please Contact Admin" });
   }
   try {
-    if (response && response.statusCode == 201) {
+    if (response && response.statusCode === 201) {
       db.Barcode.update(
         { diagnosis: req.body.diagnosis, reportTime: req.body.date + " " + req.body.time },
         {
@@ -138,7 +138,7 @@ const resultPatient = async (req, res) => {
       limit: 10,
       skip: 0
     });
-    if (response.statusCode == 404) {
+    if (response.statusCode === 404) {
       return res.status(404).send({
         _msg: "No records found",
         _status: 404
@@ -179,7 +179,7 @@ const scrap = async (req, res) => {
       }
     }
   );
-  res.send({ status: status[0] == 1 });
+  res.send({ status: status[0] === 1 });
 };
 const getLocationCount = async (req, res) => {
   const location = await db.Location.count();
@@ -246,7 +246,7 @@ const getAvgStats = async (req, res) => {
     logger.info(`Executing getAvgStats mongo call with Start:${start}, End:${end}`);
 
     const custMap = {};
-    if (req.query.type == "customerId") {
+    if (req.query.type === "customerId") {
       const custList = await db.Account.findAll({
         where: {
           role: Role.Customer
@@ -269,7 +269,7 @@ const getAvgStats = async (req, res) => {
         {
           $group: {
             _id: {
-              cat: req.query.type == "location" ? "$location" : "$customerId"
+              cat: req.query.type === "location" ? "$location" : "$customerId"
             },
             average: { $avg: "$diff" },
             count: { $sum: 1 }
@@ -288,7 +288,7 @@ const getAvgStats = async (req, res) => {
     };
 
     stats.forEach(async (item) => {
-      if (req.query.type == "customerId") {
+      if (req.query.type === "customerId") {
         response.data.push(custMap[item._id.cat] || item._id.cat);
       } else {
         response.data.push(item._id.cat);

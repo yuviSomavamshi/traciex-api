@@ -90,7 +90,7 @@ const allowlist = ["https://traciex.healthx.global"];
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions = {
     origin: false,
-    credentials: process.env.NODE_ENV === "production",
+    credentials: true,
     exposedHeaders: ["set-cookie"]
   };
 
@@ -105,7 +105,7 @@ const corsOptionsDelegate = (req, callback) => {
 app.use(cors(corsOptionsDelegate));
 /*
 app.use((req, res, next) => {
-  if (req.path == '/api/v1/accounts/authenticate') {
+  if (req.path === '/api/v1/accounts/authenticate') {
     next();
   }
   else {
@@ -144,7 +144,7 @@ app.use((err, req, res, next) => {
 // start server
 tls.CLIENT_RENEG_LIMIT = 0;
 var server;
-if (process.env.NODE_ENV == "production") {
+if (process.env.NODE_ENV === "production") {
   const privateKey = fs.readFileSync(path.join(__dirname, "privkey.pem"), "utf8");
   const certificate = fs.readFileSync(path.join(__dirname, "fullchain.pem"), "utf8");
   server = https.createServer({ key: privateKey, cert: certificate }, app);
