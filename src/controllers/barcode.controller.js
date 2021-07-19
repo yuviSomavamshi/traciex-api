@@ -8,6 +8,7 @@ const Role = require("../_helpers/role");
 const upload = require("../_middleware/barcode.middleware");
 const uuid = require("uuid").v4;
 const barcodeService = require("../services/barcode.service");
+const checkCSRF = require("./checkCSRF");
 
 // routes
 const setUUID = (req, res, next) => {
@@ -15,10 +16,10 @@ const setUUID = (req, res, next) => {
   next();
 };
 
-router.get("/", authorize([Role.Admin, Role.SubAdmin]), barcodeService.findAllMeta);
-router.post("/upload", authorize([Role.SubAdmin]), setUUID, upload.single("file"), barcodeService.upload);
-router.get("/report", authorize([Role.Admin, Role.Customer]), qsSchema, barcodeService.report);
-router.delete("/:file", authorize([Role.SubAdmin]), barcodeService.deleteMeta);
+router.get("/", checkCSRF, authorize([Role.Admin, Role.SubAdmin]), barcodeService.findAllMeta);
+router.post("/upload", checkCSRF, authorize([Role.SubAdmin]), setUUID, upload.single("file"), barcodeService.upload);
+router.get("/report", checkCSRF, authorize([Role.Admin, Role.Customer]), qsSchema, barcodeService.report);
+router.delete("/:file", checkCSRF, authorize([Role.SubAdmin]), barcodeService.deleteMeta);
 
 module.exports = router;
 

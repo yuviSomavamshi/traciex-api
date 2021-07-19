@@ -19,24 +19,25 @@ const PASSWORD_RULE = {
     "Password must contain \n\t*. at least 1 lowercase alphabetical character.\n\t*. at least 1 uppercase alphabetical character.\n\t*. at least 1 numeric character.\n\t*. at least one special character !@#$%^&\n\t*. Mininum of 8 characters"
 };
 const moment = require("moment");
+const checkCSRF = require("./checkCSRF");
 
 // Staff routes
-router.get("/staff", authorize([Role.Customer]), getAllStaff);
-router.post("/staff", authorize([Role.Customer]), createStaffSchema, createStaff);
-router.get("/staff/:id", authorize([Role.Customer]), getStaffById);
-router.put("/staff/:id", authorize([Role.Customer]), updateStaffSchema, updateStaff);
-router.delete("/staff/:id", authorize([Role.Customer]), _deleteStaff);
+router.get("/staff", checkCSRF, authorize([Role.Customer]), getAllStaff);
+router.post("/staff", checkCSRF, authorize([Role.Customer]), createStaffSchema, createStaff);
+router.get("/staff/:id", checkCSRF, authorize([Role.Customer]), getStaffById);
+router.put("/staff/:id", checkCSRF, authorize([Role.Customer]), updateStaffSchema, updateStaff);
+router.delete("/staff/:id", checkCSRF, authorize([Role.Customer]), _deleteStaff);
 
 // Location routes
 
-router.get("/location/:id", authorize([Role.Customer]), getLocationById);
-router.post("/location/", authorize([Role.Customer]), createLocation);
-router.put("/location/:id", authorize([Role.Customer]), updateLocation);
-router.delete("/location/:id", authorize([Role.Customer]), _deleteLocation);
-router.get("/locations", authorize([Role.Customer]), getAllLocations);
-router.get("/locations/all", authorize([Role.Admin, Role.Staff, Role.Patient]), getAllLocationsCust);
-router.get("/usage-report", authorize([Role.Customer]), barcodeService.customerUsageReport);
-router.get("/staff-usage-report", authorize([Role.Staff]), barcodeService.staffUsageReport);
+router.get("/location/:id", checkCSRF, authorize([Role.Customer]), getLocationById);
+router.post("/location/", checkCSRF, authorize([Role.Customer]), createLocation);
+router.put("/location/:id", checkCSRF, authorize([Role.Customer]), updateLocation);
+router.delete("/location/:id", checkCSRF, authorize([Role.Customer]), _deleteLocation);
+router.get("/locations", checkCSRF, authorize([Role.Customer]), getAllLocations);
+router.get("/locations/all", checkCSRF, authorize([Role.Admin, Role.Staff, Role.Patient]), getAllLocationsCust);
+router.get("/usage-report", checkCSRF, authorize([Role.Customer]), barcodeService.customerUsageReport);
+router.get("/staff-usage-report", checkCSRF, authorize([Role.Staff]), barcodeService.staffUsageReport);
 
 module.exports = router;
 

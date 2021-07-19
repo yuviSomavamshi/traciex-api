@@ -3,10 +3,11 @@ const express = require("express");
 const router = express.Router();
 const authorize = require("../_middleware/authorize");
 const Role = require("../_helpers/role");
+const checkCSRF = require("./checkCSRF");
 
 var io;
 
-router.post("/register", authorize([Role.Staff]), (req, res) => {
+router.post("/register", checkCSRF, authorize([Role.Staff]), (req, res) => {
   console.log(req.body.receiverName, Object.keys(global.clients));
   if (global.clients.hasOwnProperty(req.body.receiverName)) {
     global.clients[req.body.receiverName].emit("SCAN_QR_CODE_CONFIRM", req.body);
@@ -17,7 +18,7 @@ router.post("/register", authorize([Role.Staff]), (req, res) => {
   }
 });
 
-router.post("/check", authorize([Role.Staff]), (req, res) => {
+router.post("/check", checkCSRF, authorize([Role.Staff]), (req, res) => {
   if (global.senders[req.user.id] && global.clients.hasOwnProperty(global.senders[req.user.id].receiverName)) {
     res.status(200).send({ statusCode: 200, status: "success", message: "Paired Device " + req.body.receiverName });
   } else {
@@ -25,7 +26,7 @@ router.post("/check", authorize([Role.Staff]), (req, res) => {
   }
 });
 
-router.post("/timer/:type", authorize([Role.Staff]), (req, res) => {
+router.post("/timer/:type", checkCSRF, authorize([Role.Staff]), (req, res) => {
   let event;
   switch (req.params.type) {
     case "start":
@@ -55,7 +56,7 @@ router.post("/timer/:type", authorize([Role.Staff]), (req, res) => {
     res.status(409).send({ statusCode: 409, status: "fail", message: "Your partner " + receiverName + " was gone" });
   }
 });
-router.post("/disconnect", authorize([Role.Staff]), (req, res) => {
+router.post("/disconnect", checkCSRF, authorize([Role.Staff]), (req, res) => {
   if (global.senders.hasOwnProperty(req.user.id)) {
     let receiverName = global.senders[req.user.id].receiverName;
     if (global.clients.hasOwnProperty(receiverName)) {

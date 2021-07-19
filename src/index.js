@@ -3,7 +3,7 @@ const helmet = require("helmet");
 const logger = require("morgan");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const csrf = require("csurf");
+const redis = require("redis");
 const marked = require("marked");
 const cors = require("cors");
 const fs = require("fs");
@@ -18,6 +18,9 @@ const RedisMan = require("./utils/redis_man");
 const nocache = require("nocache");
 require("dotenv").config();
 require("./_helpers/db");
+const connectRedis = require("connect-redis");
+const session = require("express-session");
+const RedisStore = connectRedis(session);
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
@@ -33,24 +36,18 @@ whiteboard.init(redisConfig);
 RedisMan.init({
   config: redisConfig
 });
+var client = redis.createClient(redisConfig);
 
 const app = express();
 
-const connectRedis = require("connect-redis");
-const session = require("express-session");
-
-//const IORedis = require("ioredis");
-//const redisClient = new IORedis(redisConfig);
-
-//const RedisStore = new (connectRedis(session))();
 app.use(
   session({
-    //  store: RedisStore({ client: redisClient }),
+    store: new RedisStore({ ...redisConfig, client: client }),
     name: "traciex",
     secret: process.env.SECRET,
     cookie: {
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7days
+      maxAge: 7 * 24 * 60 * 60 * 1000 // week in seconds
     },
     resave: true,
     saveUninitialized: true,

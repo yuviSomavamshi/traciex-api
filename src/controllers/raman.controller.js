@@ -5,6 +5,7 @@ const Role = require("../_helpers/role");
 const upload = require("../_middleware/raman.middleware");
 const uuid = require("uuid").v4;
 const ramanService = require("../services/raman.service");
+const checkCSRF = require("./checkCSRF");
 
 // routes
 const setUUID = (req, res, next) => {
@@ -17,11 +18,11 @@ if (process.env.APIKEYS && process.env.APIKEYS.split(",").length > 0) {
   APIKEYS = process.env.APIKEYS.split(",");
 }
 
-router.get("/", authorize([Role.SubAdmin]), ramanService.findAll);
-router.post("/upload", setUUID, authorize([Role.SubAdmin]), upload.single("file"), ramanService.upload);
+router.get("/", checkCSRF, authorize([Role.SubAdmin]), ramanService.findAll);
+router.post("/upload", setUUID, checkCSRF, authorize([Role.SubAdmin]), upload.single("file"), ramanService.upload);
 router.post("/uploadByRaman", setUUID, apiKey, upload.single("file"), ramanService.uploadByRaman);
 router.post("/download", setUUID, apiKey, ramanService.download);
-router.delete("/:file", authorize([Role.SubAdmin]), ramanService.deleteCode);
+router.delete("/:file", checkCSRF, authorize([Role.SubAdmin]), ramanService.deleteCode);
 
 module.exports = router;
 

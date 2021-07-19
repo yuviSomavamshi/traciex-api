@@ -18,20 +18,21 @@ const PASSWORD_RULE = {
     "Password must contain \n\t*. at least 1 lowercase alphabetical character.\n\t*. at least 1 uppercase alphabetical character.\n\t*. at least 1 numeric character.\n\t*. at least one special character !@#$%^&\n\t*. Mininum of 8 characters"
 };
 const REFRESH_TOKEN_EXPIRY = (process.env.REFRESH_TOKEN_EXPIRY && timeParser(process.env.REFRESH_TOKEN_EXPIRY)) || timeParser("3h");
+const checkCSRF = require("./checkCSRF");
 
 // routes
 router.post("/authenticate", authenticateSchema, authenticate);
-router.post("/refresh-token", refreshTokenMW);
-router.post("/revoke-token", authorize(), revokeTokenSchema, revokeToken);
+router.post("/refresh-token", checkCSRF, refreshTokenMW);
+router.post("/revoke-token", checkCSRF, authorize(), revokeTokenSchema, revokeToken);
 router.post("/register", registerSchema, register);
 router.post("/verify-email", verifyEmailSchema, verifyEmail);
-router.post("/change-password", authorize(), changePasswordSchema, changePassword);
+router.post("/change-password", checkCSRF, authorize(), changePasswordSchema, changePassword);
 router.post("/forgot-password", forgotPasswordSchema, forgotPassword);
 router.post("/validate-reset-token", validateResetTokenSchema, validateResetToken);
 
 router.post("/reset-password", resetPasswordSchema, resetPassword);
-router.get("/role/:role", authorize(Role.Admin), getAllByRole);
-router.get("/", authorize(Role.Admin), getAll);
+router.get("/role/:role", checkCSRF, authorize(Role.Admin), getAllByRole);
+router.get("/", checkCSRF, authorize(Role.Admin), getAll);
 
 router.get("/:id", authorize(), getById);
 router.post("/", authorize([Role.Admin]), createSchema, create);
@@ -46,19 +47,22 @@ function authenticateSchema(req, res, next) {
   });
   validateRequest(req, next, schema);
 }
-
+const uuid = require("uuid");
 function authenticate(req, res) {
   const { email, password } = req.body;
   const ipAddress = req.ip;
+  let csrfToken = uuid.v4();
+  req.session.csrfToken = csrfToken;
   accountService
     .authenticate({
       email,
       password,
       ipAddress,
-      userAgent: req.headers["user-agent"]
+      userAgent: req.headers["user-agent"],
+      refreshToken: req.session.id
     })
     .then(({ refreshToken, ...account }) => {
-      setTokenCookie(res, refreshToken);
+      setTokenCookie(res, req.session.id);
       res.json({
         id: account.id,
         name: account.name,
@@ -66,7 +70,8 @@ function authenticate(req, res) {
         role: account.role,
         isVerified: account.isVerified,
         jwtToken: account.jwtToken,
-        refreshToken
+        refreshToken,
+        csrfToken
       });
     })
     .catch((err) => {
