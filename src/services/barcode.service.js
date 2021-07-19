@@ -150,7 +150,7 @@ const upload = async (req, res) => {
 // Retrieve all BarcodeMeta from the database.
 const findAllMeta = (req, res) => {
   let { page, size, token, order, sortBy } = req.query;
-  if (token === null) token = "";
+  if (token == null) token = "";
   const { limit, offset } = Pagination.getPagination(page, size);
   // status = status !== null ? status.split(",") : [0, 1, 2];
   let orderW = [];
