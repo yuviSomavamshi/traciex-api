@@ -43,7 +43,7 @@ const app = express();
 app.use(
   session({
     store: new RedisStore({ ...redisConfig, client: client }),
-    name: "traciex",
+    name: "session",
     secret: process.env.SECRET,
     cookie: {
       httpOnly: true,

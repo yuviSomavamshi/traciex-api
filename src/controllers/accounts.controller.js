@@ -51,8 +51,7 @@ const uuid = require("uuid");
 function authenticate(req, res) {
   const { email, password } = req.body;
   const ipAddress = req.ip;
-  let csrfToken = uuid.v4();
-  req.session.csrfToken = csrfToken;
+  req.session.csrfToken = uuid.v4();
   accountService
     .authenticate({
       email,
@@ -62,7 +61,6 @@ function authenticate(req, res) {
       refreshToken: req.session.id
     })
     .then(({ refreshToken, ...account }) => {
-      setTokenCookie(res, req.session.id);
       res.json({
         id: account.id,
         name: account.name,
@@ -71,7 +69,7 @@ function authenticate(req, res) {
         isVerified: account.isVerified,
         jwtToken: account.jwtToken,
         refreshToken,
-        csrfToken
+        csrfToken: req.session.csrfToken
       });
     })
     .catch((err) => {
@@ -88,7 +86,6 @@ function refreshTokenMW(req, res) {
   accountService
     .refreshToken({ token, ipAddress })
     .then(({ refreshToken, ...account }) => {
-      setTokenCookie(res, refreshToken);
       res.json({
         id: account.id,
         name: account.name,
@@ -96,7 +93,8 @@ function refreshTokenMW(req, res) {
         role: account.role,
         isVerified: account.isVerified,
         jwtToken: account.jwtToken,
-        refreshToken
+        refreshToken,
+        csrfToken: req.session.csrfToken
       });
     })
     .catch((err) => {
@@ -364,15 +362,4 @@ function update(req, res) {
     .catch((err) => {
       res.status(500).send({ message: err.message });
     });
-}
-
-// helper functions
-function setTokenCookie(res, token) {
-  // create cookie with refresh token that expires in 7 days
-  const cookieOptions = {
-    httpOnly: process.env.NODE_ENV === "production",
-    secure: process.env.NODE_ENV === "production",
-    expires: new Date(Date.now() + REFRESH_TOKEN_EXPIRY)
-  };
-  res.cookie("refreshToken", token, cookieOptions);
 }
