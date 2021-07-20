@@ -37,6 +37,7 @@ function sendMailTemplate(to, templateName, context, subject) {
               console.error("Mail sending failed: " + error);
               return resolve(false);
             } else {
+              console.log(res);
               return resolve(true);
             }
           });

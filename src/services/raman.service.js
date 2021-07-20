@@ -98,9 +98,9 @@ const findAll = (req, res) => {
   let { page, size, token, status, order, sortBy } = req.query;
   if (token == null) token = "";
   const { limit, offset } = Pagination.getPagination(page, size);
-  status = status !== null ? status.split(",") : [0, 1, 2];
+  status = status != null ? status.split(",") : [0, 1, 2];
   let orderW = [];
-  if (sortBy !== null && order !== null) {
+  if (sortBy != null && order != null) {
     orderW = [[sortBy || "createdAt", order || "DESC"]];
   }
 

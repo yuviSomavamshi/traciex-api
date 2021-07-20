@@ -53,7 +53,7 @@ const upload = async (req, res) => {
           filename: req.file.originalname
         };
 
-        if (barcode && barcode.code !== null && /^[a-zA-Z0-9-]{8,20}$/.test(String(barcode.code))) {
+        if (barcode && barcode.code != null && /^[a-zA-Z0-9-]{8,20}$/.test(String(barcode.code))) {
           if (barcodes.indexOf(barcode) === -1) {
             barcodes.push(barcode);
           }
@@ -75,7 +75,7 @@ const upload = async (req, res) => {
         let result = await db.Barcode.findOne({
           where: { code: barcodes[i].code }
         });
-        if (result !== null) {
+        if (result != null) {
           duplicates.push(barcodes[i].code);
         } else {
           valid.push(barcodes[i]);
@@ -152,9 +152,9 @@ const findAllMeta = (req, res) => {
   let { page, size, token, order, sortBy } = req.query;
   if (token == null) token = "";
   const { limit, offset } = Pagination.getPagination(page, size);
-  // status = status !== null ? status.split(",") : [0, 1, 2];
+  // status = status != null ? status.split(",") : [0, 1, 2];
   let orderW = [];
-  if (sortBy !== null && order !== null) {
+  if (sortBy != null && order != null) {
     orderW = [[sortBy || "createdAt", order || "DESC"]];
   }
 
