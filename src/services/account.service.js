@@ -76,7 +76,6 @@ async function authenticate({ email, password, ipAddress, userAgent, refreshToke
 async function refreshToken({ token, ipAddress }) {
   const rt = await getRefreshToken(token);
   const account = await rt.getAccount();
-
   // replace old refresh token with a new one and save
   const newRefreshToken = generateRefreshToken(account, ipAddress);
   rt.revoked = Date.now();
@@ -407,7 +406,7 @@ function generateRefreshToken(account, ipAddress, token) {
   return new db.RefreshToken({
     accountId: account.id,
     token: token,
-    expires: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
+    expires: new Date(Date.now() + REFRESH_TOKEN_EXPIRY).getTime(),
     createdByIp: ipAddress
   });
 }

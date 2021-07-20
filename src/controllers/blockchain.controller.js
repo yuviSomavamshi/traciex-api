@@ -10,7 +10,7 @@ var APIKEYS = ["23423432423", "3453454343"];
 if (process.env.APIKEYS && process.env.APIKEYS.split(",").length > 0) {
   APIKEYS = process.env.APIKEYS.split(",");
 }
-const checkCSRF = require("./checkCSRF");
+const checkCSRF = require("../_middleware/checkCSRF");
 
 router.post("/register-device", checkCSRF, authorize([Role.Staff]), registerSchema, blockchainService.register);
 router.post("/scrap-device", checkCSRF, authorize([Role.Staff]), scrapDeviceSchema, blockchainService.scrap);

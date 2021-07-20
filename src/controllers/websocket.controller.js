@@ -3,12 +3,13 @@ const express = require("express");
 const router = express.Router();
 const authorize = require("../_middleware/authorize");
 const Role = require("../_helpers/role");
-const checkCSRF = require("./checkCSRF");
+const checkCSRF = require("../_middleware/checkCSRF");
+const { setupWorker } = require("@socket.io/sticky");
+const { createAdapter } = require("@socket.io/cluster-adapter");
 
 var io;
 
 router.post("/register", checkCSRF, authorize([Role.Staff]), (req, res) => {
-  console.log(req.body.receiverName, Object.keys(global.clients));
   if (global.clients.hasOwnProperty(req.body.receiverName)) {
     global.clients[req.body.receiverName].emit("SCAN_QR_CODE_CONFIRM", req.body);
     global.senders[req.user.id] = req.body;
@@ -80,6 +81,11 @@ module.exports = {
         credentials: false
       }
     });
+    // use the cluster adapter
+    io.adapter(createAdapter());
+
+    // setup connection with the primary process
+    setupWorker(io);
     io.on("connection", (socket) => {
       socket.on("disconnect", () => {
         console.log("DEVICE_DISCONNECTED", socket.id, socket.username, socket.userId);

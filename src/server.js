@@ -1,12 +1,47 @@
 const cluster = require("cluster");
 const os = require("os");
-
+const http = require("http");
+const https = require("https");
 const CPUS = os.cpus();
 
-if (process.env.NODE_ENV === "production" && CPUS.length > 1 && cluster.isMaster) {
-  CPUS.forEach(function () {
-    cluster.fork();
+const { setupMaster } = require("@socket.io/sticky");
+const { setupPrimary } = require("@socket.io/cluster-adapter");
+
+if (CPUS.length > 1 && cluster.isMaster) {
+  let port, httpServer;
+  if (process.env.NODE_ENV === "production") {
+    const privateKey = fs.readFileSync(path.join(__dirname, "privkey.pem"), "utf8");
+    const certificate = fs.readFileSync(path.join(__dirname, "fullchain.pem"), "utf8");
+    httpServer = https.createServer({ key: privateKey, cert: certificate });
+    port = process.env.PORT || 443;
+  } else {
+    httpServer = http.createServer();
+    port = process.env.PORT || 8080;
+  }
+  // setup sticky sessions
+  setupMaster(httpServer, {
+    loadBalancingMethod: "least-connection"
   });
+
+  // setup connections between the workers
+  setupPrimary();
+
+  // needed for packets containing buffers (you can ignore it if you only send plaintext objects)
+  // Node.js < 16.0.0
+  cluster.setupMaster({
+    serialization: "advanced"
+  });
+  // Node.js > 16.0.0
+  // cluster.setupPrimary({
+  //   serialization: "advanced",
+  // });
+
+  httpServer.listen(port);
+
+  for (let i = 0; i < 2; i++) {
+    cluster.fork();
+  }
+
   cluster.on("listening", function (worker) {
     console.log("Cluster %d connected", worker.process.pid);
   });

@@ -19,7 +19,7 @@ const PASSWORD_RULE = {
     "Password must contain \n\t*. at least 1 lowercase alphabetical character.\n\t*. at least 1 uppercase alphabetical character.\n\t*. at least 1 numeric character.\n\t*. at least one special character !@#$%^&\n\t*. Mininum of 8 characters"
 };
 const moment = require("moment");
-const checkCSRF = require("./checkCSRF");
+const checkCSRF = require("../_middleware/checkCSRF");
 
 // Staff routes
 router.get("/staff", checkCSRF, authorize([Role.Customer]), getAllStaff);

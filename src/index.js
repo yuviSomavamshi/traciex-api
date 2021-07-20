@@ -21,7 +21,6 @@ require("./_helpers/db");
 const connectRedis = require("connect-redis");
 const session = require("express-session");
 const RedisStore = connectRedis(session);
-
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 6000 // limit each IP to 6000 requests per windowMs
@@ -100,31 +99,10 @@ const corsOptionsDelegate = (req, callback) => {
 };
 
 app.use(cors(corsOptionsDelegate));
-/*
-app.use((req, res, next) => {
-  if (req.path === '/api/v1/accounts/authenticate') {
-    next();
-  }
-  else {
-    csrf()(req, res, next);
-  }
-});
-*/
-app.use("/api/v1/accounts", require("./controllers/accounts.controller"));
 
-app.use("/api/v1/customer", require("./controllers/customer.controller"));
-
-app.use("/api/v1/barcode", require("./controllers/barcode.controller"));
-
-app.use("/api/v1/raman", require("./controllers/raman.controller"));
-
-app.use("/api/v1/bc", require("./controllers/blockchain.controller"));
-const WebSocket = require("./controllers/websocket.controller");
-
-app.use("/api/v1/ws", WebSocket.router);
+app.use("/api/v1", require("./controllers"));
 
 // global error handler
-
 app.use((req, res) => {
   res.status(404).json({ message: "Resource Not Found." });
 });
@@ -151,7 +129,7 @@ if (process.env.NODE_ENV === "production") {
   port = process.env.PORT || 80;
 }
 server.listen(port, () => console.log("Server listening on port " + port));
-WebSocket.init(server);
+require("./controllers/websocket.controller").init(server);
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);

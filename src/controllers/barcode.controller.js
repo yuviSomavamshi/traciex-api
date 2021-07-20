@@ -8,7 +8,7 @@ const Role = require("../_helpers/role");
 const upload = require("../_middleware/barcode.middleware");
 const uuid = require("uuid").v4;
 const barcodeService = require("../services/barcode.service");
-const checkCSRF = require("./checkCSRF");
+const checkCSRF = require("../_middleware/checkCSRF");
 
 // routes
 const setUUID = (req, res, next) => {

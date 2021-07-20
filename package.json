@@ -4,19 +4,19 @@
   "description": "NodeJS + MySQL API for Email Sign Up with Verification, Authentication & Forgot Password",
   "license": "MIT",
   "scripts": {
-    "start": "node ./src/index.js",
-    "start:dev": "nodemon ./src/index.js",
+    "start": "node ./src/server.js",
+    "start:dev": "nodemon ./src/server.js",
     "prettify": "prettier --ignore-path \"./.prettierignore\" --write \"./**/*.{js,jsx,json}\""
   },
   "dependencies": {
+    "@socket.io/cluster-adapter": "^0.1.0",
+    "@socket.io/sticky": "^1.0.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "connect-redis": "^6.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
-    "csurf": "^1.11.0",
-    "dateformat": "^4.5.1",
     "dotenv": "^8.2.0",
     "exceljs": "^4.2.1",
     "express": "^4.17.1",
