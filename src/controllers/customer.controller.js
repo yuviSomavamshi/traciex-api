@@ -106,8 +106,8 @@ function createStaffSchema(req, res, next) {
 
 function createStaff(req, res, next) {
   req.body.role = Role.Staff;
-  req.body.activationDt = moment(new Date().getTime()).format("YYYY-MM-DD hh:mm:ss");
-  req.body.expiryDt = moment().add(10, "y").format("YYYY-MM-DD hh:mm:ss");
+  req.body.activationDt = new Date().getTime();
+  req.body.expiryDt = moment().add(10, "y").utc().format("YYYY-MM-DD hh:mm:ss");
   accountService
     .create(req.body, req.user.id)
     .then((account) => res.json(account))

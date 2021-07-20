@@ -17,7 +17,6 @@ const PASSWORD_RULE = {
   message:
     "Password must contain \n\t*. at least 1 lowercase alphabetical character.\n\t*. at least 1 uppercase alphabetical character.\n\t*. at least 1 numeric character.\n\t*. at least one special character !@#$%^&\n\t*. Mininum of 8 characters"
 };
-const REFRESH_TOKEN_EXPIRY = (process.env.REFRESH_TOKEN_EXPIRY && timeParser(process.env.REFRESH_TOKEN_EXPIRY)) || timeParser("3h");
 const checkCSRF = require("./checkCSRF");
 
 // routes
@@ -317,7 +316,7 @@ function createSchema(req, res, next) {
 }
 
 function create(req, res) {
-  req.body.activationDt = moment(new Date().getTime()).format("YYYY-MM-DD hh:mm:ss");
+  req.body.activationDt = new Date().getTime();
   req.body.expiryDt = moment().add(10, "y").format("YYYY-MM-DD hh:mm:ss");
   accountService
     .create(req.body, req.user.id)

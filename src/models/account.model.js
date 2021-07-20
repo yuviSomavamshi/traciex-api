@@ -1,4 +1,5 @@
 const { DataTypes } = require("sequelize");
+const moment = require("moment");
 
 module.exports = model;
 
@@ -35,13 +36,13 @@ function model(sequelize) {
     isActivated: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.activationDt && new Date(this.activationDt).getTime() < new Date().getTime();
+        return this.activationDt && moment(this.activationDt).utc().millisecond() < moment(new Date().getTime()).utc().millisecond();
       }
     },
     isExpired: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.expiryDt && new Date(this.expiryDt).getTime() > new Date().getTime();
+        return this.expiryDt && moment(this.expiryDt).utc().millisecond() < moment(new Date().getTime()).utc().millisecond();
       }
     },
     isVerified: {

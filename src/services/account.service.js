@@ -112,10 +112,14 @@ function register(params) {
     if (info) {
       // send already registered error in email to prevent account enumeration
       resolve(false);
-      return await sendAlreadyRegisteredEmail(info);
+      try {
+        return await sendAlreadyRegisteredEmail(info);
+      } catch (error) {
+        console.error(error);
+      }
     }
 
-    params.activationDt = moment(new Date().getTime()).format("YYYY-MM-DD hh:mm:ss");
+    params.activationDt = new Date().getTime();
     params.expiryDt = moment().add(10, "y").format("YYYY-MM-DD hh:mm:ss");
 
     // create account object
@@ -138,7 +142,11 @@ function register(params) {
     await account.save();
     resolve(true);
     // send email
-    sendVerificationEmail(account);
+    try {
+      await sendVerificationEmail(account);
+    } catch (error) {
+      console.error(error);
+    }
   });
 }
 
@@ -462,25 +470,21 @@ async function sendOnboardEmail(account, password) {
 }
 
 async function sendVerificationEmail(account) {
-  try {
-    const verifyUrl =
-      account.role === Role.Admin ? `${API_URL}/accounts/verify-email?token=${account.verificationToken}` : `${account.verificationToken}`;
-    const activationLinkValidity = 3;
+  const verifyUrl =
+    account.role === Role.Admin ? `${API_URL}/accounts/verify-email?token=${account.verificationToken}` : `${account.verificationToken}`;
+  const activationLinkValidity = 3;
 
-    return await sendEmail(
-      account.email,
-      account.role === Role.Admin ? "welcome.html" : "verification-code.html",
-      {
-        activationLink: verifyUrl,
-        name: account.name,
-        loginId: account.email,
-        activationLinkValidity: activationLinkValidity
-      },
-      `Welcome to ${CLIENT_NAME}`
-    );
-  } catch (error) {
-    console.error(error);
-  }
+  return await sendEmail(
+    account.email,
+    account.role === Role.Admin ? "welcome.html" : "verification-code.html",
+    {
+      activationLink: verifyUrl,
+      name: account.name,
+      loginId: account.email,
+      activationLinkValidity: activationLinkValidity
+    },
+    `Welcome to ${CLIENT_NAME}`
+  );
 }
 
 async function sendAlreadyRegisteredEmail(account) {
