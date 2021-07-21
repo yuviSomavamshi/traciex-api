@@ -35,7 +35,7 @@ router.get("/", checkCSRF, authorize(Role.Admin), getAll);
 
 router.get("/:id", authorize(), getById);
 router.post("/", authorize([Role.Admin]), createSchema, create);
-router.put("/:id", authorize(), updateSchema, update);
+router.post("/:id/update", authorize(), updateSchema, update);
 
 module.exports = router;
 

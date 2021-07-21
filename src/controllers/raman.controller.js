@@ -22,7 +22,7 @@ router.get("/", checkCSRF, authorize([Role.SubAdmin]), ramanService.findAll);
 router.post("/upload", setUUID, checkCSRF, authorize([Role.SubAdmin]), upload.single("file"), ramanService.upload);
 router.post("/uploadByRaman", setUUID, apiKey, upload.single("file"), ramanService.uploadByRaman);
 router.post("/download", setUUID, apiKey, ramanService.download);
-router.delete("/:file", checkCSRF, authorize([Role.SubAdmin]), ramanService.deleteCode);
+router.post("/:file/delete", checkCSRF, authorize([Role.SubAdmin]), ramanService.deleteCode);
 
 module.exports = router;
 

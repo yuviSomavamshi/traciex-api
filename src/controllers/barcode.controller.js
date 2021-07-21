@@ -19,7 +19,7 @@ const setUUID = (req, res, next) => {
 router.get("/", checkCSRF, authorize([Role.Admin, Role.SubAdmin]), barcodeService.findAllMeta);
 router.post("/upload", checkCSRF, authorize([Role.SubAdmin]), setUUID, upload.single("file"), barcodeService.upload);
 router.get("/report", checkCSRF, authorize([Role.Admin, Role.Customer]), qsSchema, barcodeService.report);
-router.delete("/:file", checkCSRF, authorize([Role.SubAdmin]), barcodeService.deleteMeta);
+router.post("/:file/delete", checkCSRF, authorize([Role.SubAdmin]), barcodeService.deleteMeta);
 
 module.exports = router;
 
