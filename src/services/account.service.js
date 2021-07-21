@@ -45,7 +45,7 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
   if (!account || !(await bcrypt.compare(password, account.passwordHash))) {
     let msg = "Email or password is incorrect";
     if (userAgent === "HealthX-Mobile") {
-      msg += "\nIn case you do not have Account please Signup";
+      msg += "\nIn case you do not have an account, please Signup";
     }
     throw new Error(msg);
   }
@@ -336,7 +336,7 @@ async function update(id, params, userID, userRole) {
   let account = await getAccount(id);
 
   if (userRole === "Customer" && account.customerId !== userID) {
-    throw new Error("The staff doesnt belong to your Organization");
+    throw new Error("The staff does not belong to your Organization");
   }
 
   // validate (if email was changed)
