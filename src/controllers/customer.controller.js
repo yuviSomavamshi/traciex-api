@@ -168,14 +168,6 @@ function getLocationById(req, res, next) {
     .catch(next);
 }
 
-function createOrUpdateSchema(req, res, next) {
-  const schema = Joi.object({
-    location: Joi.string().required(),
-    slot_config: Joi.object().optional()
-  });
-  validateRequest(req, next, schema);
-}
-
 function createLocation(req, res, next) {
   // have to pass customer id from params.
   locationService

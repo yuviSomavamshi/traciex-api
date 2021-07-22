@@ -112,8 +112,13 @@ app.use((err, req, res, next) => {
   if (typeof err === "string" && err.startsWith("Invalid input")) {
     return res.status(400).send({ message: err });
   }
-
-  return res.status(err.status || 500).json({ message: err.message || "Internal Server Error." });
+  let message;
+  if (typeof err === "string") {
+    message = err;
+  } else {
+    message = err.message || "Internal Server Error.";
+  }
+  return res.status(err.status || 500).json({ message });
 });
 
 // start server
